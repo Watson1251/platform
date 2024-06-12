@@ -13,6 +13,8 @@ import {
   NbSelectModule,
   NbIconModule,
   NbThemeModule,
+  DEFAULT_MEDIA_BREAKPOINTS,
+  NbLayoutDirection,
 } from '@nebular/theme';
 import { NbEvaIconsModule } from '@nebular/eva-icons';
 import { NbSecurityModule } from '@nebular/security';
@@ -88,6 +90,9 @@ export class ThemeModule {
             name: 'default',
           },
           [ DEFAULT_THEME, COSMIC_THEME, CORPORATE_THEME, DARK_THEME, MATERIAL_LIGHT_THEME, MATERIAL_DARK_THEME ],
+          DEFAULT_MEDIA_BREAKPOINTS,
+
+          NbLayoutDirection.RTL
         ).providers,
       ],
     };

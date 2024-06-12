@@ -1,0 +1,23 @@
+@font-face {
+  font-family: "traditional-arabic";
+  src: local("traditional-arabic"),
+    url(./fonts/traditional-arabic.ttf) format("truetype");
+}
+
+@font-face {
+  font-family: "decotype";
+  src: local("decotype"), url("./fonts/deco.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "din";
+  src: local("din"), url("./fonts/din.ttf") format("truetype");
+}
+
+:root {
+  --arabic-font: "din", Arial, sans-serif;
+
+  --main-color: rgba(119, 59, 3, 0.714);
+  --secondary-color: rgba(119, 59, 3, 0.3);
+  --toolbar-focus-color: #576dee;
+}
