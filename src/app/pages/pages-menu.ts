@@ -2,6 +2,33 @@ import { NbMenuItem } from '@nebular/theme';
 
 export const MENU_ITEMS: NbMenuItem[] = [
   {
+    title: 'التزييف العميق (DeepFake)',
+    icon: 'eye-outline',
+    link: '/pages/deepfake',
+    children: [
+      {
+        title: 'كشف التزييف العميق',
+        link: '/pages/deepfake/detection',
+      },
+      {
+        title: 'Grid',
+        link: '/pages/deepfake/grid',
+      },
+      {
+        title: 'Icons',
+        link: '/pages/deepfake/icons',
+      },
+      {
+        title: 'Typography',
+        link: '/pages/deepfake/typography',
+      },
+      {
+        title: 'Animated Searches',
+        link: '/pages/deepfake/search-fields',
+      },
+    ],
+  },
+  {
     title: 'E-commerce',
     icon: 'shopping-cart-outline',
     link: '/pages/dashboard',

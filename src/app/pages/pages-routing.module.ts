@@ -11,6 +11,11 @@ const routes: Routes = [{
   component: PagesComponent,
   children: [
     {
+      path: 'deepfake',
+      loadChildren: () => import('./deepfake/deepfake.module')
+        .then(m => m.DeepfakeModule),
+    },
+    {
       path: 'dashboard',
       component: ECommerceComponent,
     },
