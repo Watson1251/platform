@@ -5,13 +5,26 @@
         إرفاق الملفات
       </nb-card-header>
       <nb-card-body>
-        
+  
+        <ngx-dropzone (change)="onSelect($event)" class="upload-zone" [expandable]="true" accept="video/*">
+          <ngx-dropzone-label>اسحب الملف أو انقر هُنا</ngx-dropzone-label>
+          
+          <div class="upload-video-container" *ngFor="let f of files">
+            <ngx-dropzone-video-preview class="upload-video-preview" ngProjectAs="ngx-dropzone-preview" [file]="f" [removable]="true" (removed)="onRemove(f)">
+            </ngx-dropzone-video-preview>
+            <ngx-dropzone-label class="upload-label">{{ f.name }}</ngx-dropzone-label>
+            <!-- <ngx-dropzone-label class="upload-label">({{ f.type }})</ngx-dropzone-label> -->
+          </div>
+          
+        </ngx-dropzone>
+  
       </nb-card-body>
       <nb-card-footer>
         <a href="https://akveo.github.io/eva-icons/?utm_campaign=eva_icons%20-%20home%20-%20ngx_admin%20code%20embed&utm_source=ngx_admin&utm_medium=embedded&utm_content=icons_eva_icons_card" target="_blank">See all Eva Icons</a>
       </nb-card-footer>
     </nb-card>
   </div>
+  
   <div class="col-md col-lg" *ngIf="false">
     <nb-card>
       <nb-card-header>

@@ -61,7 +61,8 @@
               "echarts",
               "lodash",
               "zrender/lib/svg/svg",
-              "zrender/lib/vml/vml"
+              "zrender/lib/vml/vml",
+              "@iplab/ngx-file-upload"
             ],
             "vendorChunk": true,
             "extractLicenses": false,
@@ -193,5 +194,8 @@
     "@angular-eslint/schematics:library": {
       "setParserOptionsProject": true
     }
+  },
+  "cli": {
+    "analytics": false
   }
 }

@@ -1,6 +1,10 @@
 {
   "compileOnSave": false,
   "compilerOptions": {
+    "skipLibCheck": true,
+    "strict": false,
+    "forceConsistentCasingInFileNames": true,
+    "noEmitOnError": true,
     "importHelpers": true,
     "module": "es2020",
     "outDir": "./dist/out-tsc",

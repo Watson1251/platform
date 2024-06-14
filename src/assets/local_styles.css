@@ -21,3 +21,26 @@
   --secondary-color: rgba(119, 59, 3, 0.3);
   --toolbar-focus-color: #576dee;
 }
+
+/* Snackbar css */
+.mat-mdc-snack-bar-container .mdc-snackbar__label {
+  font-family: var(--arabic-font) !important;
+}
+.mat-mdc-snack-bar-container .mat-mdc-button.mat-mdc-snack-bar-action:not(:disabled) {
+  font-family: var(--arabic-font) !important;
+  font-weight: bolder !important;
+  color: rgb(255, 255, 255) !important;;
+}
+.mat-mdc-snack-bar-container {
+  &.success {
+    --mdc-snackbar-container-color: rgba(71, 136, 25, 0.662);
+    --mat-snack-bar-button-color: rgb(255, 255, 255) !important;
+    --mdc-snackbar-supporting-text-color: rgb(255, 255, 255) !important;
+  }
+  &.failure {
+    --mdc-snackbar-container-color: rgba(136, 47, 25, 0.662);
+    --mat-snack-bar-button-color: rgb(255, 255, 255) !important;
+    --mdc-snackbar-supporting-text-color: rgb(255, 255, 255) !important;
+  }
+  direction: rtl;
+}

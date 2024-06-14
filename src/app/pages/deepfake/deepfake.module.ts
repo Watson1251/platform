@@ -10,6 +10,8 @@ import { TypographyComponent } from './typography/typography.component';
 import { SearchComponent } from './search-fields/search-fields.component';
 import { DeepfakeDetectionComponent } from './deepfake-detection/deepfake-detection.component';
 
+import { NgxDropzoneModule } from 'ngx-dropzone';
+
 const components = [
   DeepfakeComponent,
   DeepfakeDetectionComponent,
@@ -28,6 +30,7 @@ const components = [
     NbAlertModule,
     ThemeModule,
     DeepfakeRoutingModule,
+    NgxDropzoneModule
   ],
   declarations: [
     ...components,

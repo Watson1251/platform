@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { NbIconLibraries } from '@nebular/theme';
+import { NbComponentStatus, NbGlobalPhysicalPosition, NbIconLibraries } from '@nebular/theme';
+import { SnackbarService } from '../../../services/snackbar.service';
 
 @Component({
   selector: 'ngx-deepfake-detection',
@@ -9,9 +10,10 @@ import { NbIconLibraries } from '@nebular/theme';
 })
 export class DeepfakeDetectionComponent {
 
-  evaIcons = [];
-
-  constructor(iconsLibrary: NbIconLibraries) {
+  constructor(
+    iconsLibrary: NbIconLibraries,
+    private snackbarService: SnackbarService
+  ) {
     this.evaIcons = Array.from(iconsLibrary.getPack('eva').icons.keys())
       .filter(icon => icon.indexOf('outline') === -1);
 
@@ -19,6 +21,24 @@ export class DeepfakeDetectionComponent {
     iconsLibrary.registerFontPack('far', { packClass: 'far', iconClassPrefix: 'fa' });
     iconsLibrary.registerFontPack('ion', { iconClassPrefix: 'ion' });
   }
+
+  files: File[] = [];
+
+  onSelect(event: any) {
+    for (let file of event.addedFiles) {
+      if (!this.files.some(f => f.name === file.name && f.size === file.size && f.type === file.type)) {
+        this.files.push(file);
+      } else {
+        this.snackbarService.openSnackBar('يوجد ملف مُضاف بنفس الاسم. الرجاء حذفه أو تغيير اسمه.', 'failure');
+      }
+    }
+  }
+  onRemove(event:any) {
+    console.log(event);
+    this.files.splice(this.files.indexOf(event), 1);
+  }
+
+  evaIcons = [];
 
   icons = {
 
@@ -47,7 +67,7 @@ export class DeepfakeDetectionComponent {
       'briefcase', 'bug', 'building', 'bullhorn',
     ],
 
-    fontAwesomeRegular: [ 'chart-bar', 'bell', 'bell-slash', 'bookmark', 'building' ],
+    fontAwesomeRegular: ['chart-bar', 'bell', 'bell-slash', 'bookmark', 'building'],
   };
 
 }
