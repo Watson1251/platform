@@ -1,6 +1,8 @@
 import { ChangeDetectionStrategy, Component } from '@angular/core';
-import { NbComponentStatus, NbGlobalPhysicalPosition, NbIconLibraries } from '@nebular/theme';
+import { NbComponentSize, NbMediaBreakpointsService, NbThemeService } from '@nebular/theme';
 import { SnackbarService } from '../../../services/snackbar.service';
+import { UploadFileService } from '../../../services/upload-file.service';
+import { map } from 'rxjs/operators';
 
 @Component({
   selector: 'ngx-deepfake-detection',
@@ -11,18 +13,26 @@ import { SnackbarService } from '../../../services/snackbar.service';
 export class DeepfakeDetectionComponent {
 
   constructor(
-    iconsLibrary: NbIconLibraries,
+    private themeService: NbThemeService,
+    private breakpointService: NbMediaBreakpointsService,
+    private uploadFileService: UploadFileService,
     private snackbarService: SnackbarService
   ) {
-    this.evaIcons = Array.from(iconsLibrary.getPack('eva').icons.keys())
-      .filter(icon => icon.indexOf('outline') === -1);
 
-    iconsLibrary.registerFontPack('fa', { packClass: 'fa', iconClassPrefix: 'fa' });
-    iconsLibrary.registerFontPack('far', { packClass: 'far', iconClassPrefix: 'fa' });
-    iconsLibrary.registerFontPack('ion', { iconClassPrefix: 'ion' });
   }
 
   files: File[] = [];
+  actionSize: NbComponentSize = 'medium';
+  isAnalyzing: boolean = false;
+
+  ngOnInit() {
+    const breakpoints = this.breakpointService.getBreakpointsMap();
+    this.themeService.onMediaQueryChange()
+      .pipe(map(([, breakpoint]) => breakpoint.width))
+      .subscribe((width: number) => {
+        this.actionSize = width > breakpoints.md ? 'medium' : 'small';
+      });
+  }
 
   onSelect(event: any) {
     for (let file of event.addedFiles) {
@@ -33,41 +43,32 @@ export class DeepfakeDetectionComponent {
       }
     }
   }
+
   onRemove(event:any) {
-    console.log(event);
     this.files.splice(this.files.indexOf(event), 1);
   }
 
-  evaIcons = [];
+  analyzeFiles() {
+    if (this.isAnalyzing)
+      return
+    
+    this.files.forEach(file => {
+      this.isAnalyzing = true;
+      if (file) {
+        this.uploadFileService.upload(file).subscribe(
+          progress => console.log(progress),
+          // progress => this.progress = progress,
+          error => console.error(error)
+        );
+      }
+    });
+    this.isAnalyzing = false;
+  }
 
-  icons = {
-
-    ionicons: [
-      'ionic', 'arrow-right-b', 'arrow-down-b', 'arrow-left-b', 'arrow-up-c', 'arrow-right-c',
-      'arrow-down-c', 'arrow-left-c', 'arrow-return-right', 'arrow-return-left', 'arrow-swap',
-      'arrow-shrink', 'arrow-expand', 'arrow-move', 'arrow-resize', 'chevron-up',
-      'chevron-right', 'chevron-down', 'chevron-left', 'navicon-round', 'navicon',
-      'drag', 'log-in', 'log-out', 'checkmark-round', 'checkmark', 'checkmark-circled',
-      'close-round', 'plus-round', 'minus-round', 'information', 'help',
-      'backspace-outline', 'help-buoy', 'asterisk', 'alert', 'alert-circled',
-      'refresh', 'loop', 'shuffle', 'home', 'search', 'flag', 'star',
-      'heart', 'heart-broken', 'gear-a', 'gear-b', 'toggle-filled', 'toggle',
-      'settings', 'wrench', 'hammer', 'edit', 'trash-a', 'trash-b',
-      'document', 'document-text', 'clipboard', 'scissors', 'funnel',
-      'bookmark', 'email', 'email-unread', 'folder', 'filing', 'archive',
-      'reply', 'reply-all', 'forward',
-    ],
-
-    fontAwesome: [
-      'adjust', 'anchor', 'archive', 'chart-area', 'arrows-alt', 'arrows-alt-h',
-      'arrows-alt-v', 'asterisk', 'at', 'car', 'ban', 'university',
-      'chart-bar', 'barcode', 'bars', 'bed', 'beer',
-      'bell', 'bell-slash', 'bicycle', 'binoculars',
-      'birthday-cake', 'bolt', 'bomb', 'book', 'bookmark',
-      'briefcase', 'bug', 'building', 'bullhorn',
-    ],
-
-    fontAwesomeRegular: ['chart-bar', 'bell', 'bell-slash', 'bookmark', 'building'],
-  };
+  clearFiles() {
+    if (this.isAnalyzing)
+      return
+    this.files.splice(0, this.files.length);
+  }
 
 }

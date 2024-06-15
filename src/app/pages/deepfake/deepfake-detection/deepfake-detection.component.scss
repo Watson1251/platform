@@ -1,4 +1,6 @@
 @import '../../../@theme/styles/themes';
+@import '@nebular/theme/styles/global/breakpoints';
+@import 'bootstrap/scss/mixins/breakpoints';
 
 @include nb-install-component() {
   nb-card-body {
@@ -13,6 +15,26 @@
 
   nb-card-footer {
     text-align: right;
+  }
+
+  nb-action {
+    cursor: pointer;
+    border-radius: 2px;
+
+    nb-icon {
+      @include nb-ltr(margin-right, 0.5rem);
+      @include nb-rtl(margin-left, 0.5rem);
+    }
+
+    ::ng-deep svg {
+      vertical-align: top;
+    }
+  }
+}
+
+@include media-breakpoint-down(xl) {
+  nb-action {
+    padding: 0;
   }
 }
 
@@ -41,4 +63,24 @@ nb-card-header, ngx-dropzone-label {
   font-size: small;
   margin: 0;
   direction: ltr;
+}
+
+.nb-action-hover {
+  font-family: var(--arabic-font);
+  transition: transform 0.3s ease, color 0.3s ease, background-color 0.3s ease;
+}
+
+.nb-action-hover:hover:not(.disabled):not([disabled]) {
+  transform: scale(1.1);
+  color: #2a75d4; /* Change text color on hover */
+}
+
+.nb-action-hover:hover:not(.disabled):not([disabled]) nb-icon {
+  color: #2a75d4; /* Change icon color on hover */
+}
+
+.nb-action-hover.disabled,
+.nb-action-hover[disabled] {
+  cursor: not-allowed;
+  opacity: 0.6; /* Optionally, change opacity to indicate disabled state */
 }

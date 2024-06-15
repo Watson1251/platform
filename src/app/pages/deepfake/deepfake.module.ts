@@ -1,5 +1,5 @@
 import { NgModule } from '@angular/core';
-import { NbAlertModule, NbCardModule, NbIconModule, NbPopoverModule, NbSearchModule } from '@nebular/theme';
+import { NbActionsModule, NbAlertModule, NbCardModule, NbIconModule, NbPopoverModule, NbSearchModule } from '@nebular/theme';
 
 import { ThemeModule } from '../../@theme/theme.module';
 import { DeepfakeRoutingModule } from './deepfake-routing.module';
@@ -28,6 +28,7 @@ const components = [
     NbSearchModule,
     NbIconModule,
     NbAlertModule,
+    NbActionsModule,
     ThemeModule,
     DeepfakeRoutingModule,
     NgxDropzoneModule
