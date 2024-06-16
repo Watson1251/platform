@@ -1,0 +1,189 @@
+const bcrypt = require("bcryptjs");
+const jwt = require("jsonwebtoken");
+const User = require("../models/user.model");
+const Role = require("../models/role.model");
+const Permission = require("../models/permission.model");
+const e = require("express");
+
+
+exports.userLogin = (req, res, next) => {
+  let fetchedUser;
+  User.findOne({ username: req.body.username.toLowerCase() })
+    .then(user => {
+      if (!user) {
+        return res.status(401).json({
+          message: "Auth failed"
+        });
+      }
+      fetchedUser = user;
+      return bcrypt.compare(req.body.password, user.password);
+    })
+    .then(result => {
+      if (res.statusCode == 401) {
+        return;
+      }
+      if (!result) {
+        return res.status(401).json({
+          message: "Auth failed"
+        });
+      }
+
+      const token = jwt.sign(
+        { username: fetchedUser.username, userId: fetchedUser._id },
+        process.env.JWT_KEY,
+        { expiresIn: "24h" }
+      );
+      res.status(200).json({
+        token: token,
+        expiresIn: 24 * 60 * 60,
+        userId: fetchedUser._id,
+        userName: fetchedUser.name,
+        role: fetchedUser.role
+      });
+    })
+    .catch(err => {
+      console.log(err);
+      return res.status(401).json({
+        message: "Invalid authentication credentials!"
+      });
+    });
+}
+
+exports.getUsers = (req, res, next) => {
+  const userQuery = User.find();
+
+  userQuery
+    .then(fetchedUsers => {
+      const modifiedUsers = fetchedUsers.map(obj => {
+        var user = {
+          _id: obj._id,
+          name: obj.name,
+          username: obj.username,
+          isMale: obj.isMale,
+          role: obj.role,
+          __v: obj.__v
+        }
+        return user;
+      });
+
+      return modifiedUsers
+    })
+    .then(modifiedUsers => {
+      res.status(200).json({
+        message: "Users fetched successfully!",
+        users: modifiedUsers
+      });
+    })
+    .catch(error => {
+      console.log(error);
+      res.status(500).json({
+        message: "Fetching users failed!"
+      });
+    });
+
+};
+
+exports.getUser = (req, res, next) => {
+  User.findById(req.params.id)
+    .then(user => {
+      if (user) {
+        res.status(200).json({
+            _id: user._id,
+            name: user.name,
+            username: user.username,
+            isMale: user.isMale,
+            role: user.role,
+            __v: user.__v
+          });
+      } else {
+        res.status(404).json({ message: "User not found!" });
+      }
+    })
+    .catch(error => {
+      console.log(error);
+      res.status(500).json({
+        message: "Fetching user failed!"
+      });
+    });
+};
+
+exports.createUser = (req, res, next) => {
+
+  bcrypt.hash(req.body.password, 10).then(hash => {
+    const user = new User({
+      name: req.body.name,
+      username: req.body.username.toLowerCase(),
+      password: hash,
+      isMale: req.body.isMale,
+      role: req.body.role,
+    });
+
+    user
+      .save()
+      .then(result => {
+        res.status(201).json({
+          message: "User created!",
+          result: result
+        });
+      })
+      .catch(err => {
+        console.log(err);
+        res.status(500).json({
+          message: "Invalid authentication credentials!"
+        });
+      });
+  });
+};
+
+exports.updateUser = (req, res, next) => {
+
+  bcrypt.hash(req.body.password, 10).then(hash => {
+
+    const user = {
+      "_id": req.body.id,
+      "name": req.body.name,
+      "username": req.body.username.toLowerCase(),
+      "isMale": req.body.isMale,
+      "role": req.body.role,
+    };
+
+    if (req.body.password != '') {
+      user["password"] = hash;
+    }
+
+    User.updateOne({ _id: user._id }, {$set: user})
+    .then(result => {
+
+      if (result.modifiedCount > 0) {
+        res.status(200).json({ message: "Update successful!" });
+      } else {
+        res.status(401).json({ message: "Update failed!" });
+      }
+    })
+    .catch(error => {
+      console.log(error);
+      res.status(500).json({
+        message: "Couldn't udpate user!"
+      });
+    });
+  });
+};
+
+exports.deleteUser = (req, res, next) => {
+
+  User.deleteOne({ _id: req.body.id })
+    .then(result => {
+
+      if (result.deletedCount > 0) {
+        res.status(200).json({ message: "Deletion successful!" });
+      } else {
+        res.status(401).json({ message: "Deletion failed!" });
+      }
+    })
+    .catch(error => {
+      console.log(error);
+      res.status(500).json({
+        message: "Deleting user failed!"
+      });
+    });
+};

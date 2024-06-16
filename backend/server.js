@@ -1,31 +1,52 @@
-const express = require('express');
-const multer = require('multer');
-const cors = require('cors');
+const app = require("./app");
+const debug = require("debug")("node-angular");
+const http = require("http");
 
-const app = express();
+const normalizePort = val => {
+  var port = parseInt(val, 10);
 
-// Configure CORS
-app.use(cors({
-  origin: 'http://localhost:4200', // Replace with your Angular app's URL
-  methods: ['GET', 'POST'],
-  allowedHeaders: ['Content-Type', 'Authorization']
-}));
-
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, 'backend/uploads/');
-  },
-  filename: (req, file, cb) => {
-    cb(null, file.originalname);
+  if (isNaN(port)) {
+    // named pipe
+    return val;
   }
-});
 
-const upload = multer({ storage: storage });
+  if (port >= 0) {
+    // port number
+    return port;
+  }
 
-app.post('/upload', upload.single('file'), (req, res) => {
-  res.status(200).json({ message: 'File uploaded successfully.' });
-});
+  return false;
+};
 
-app.listen(3000, () => {
-  console.log('Server started on http://localhost:3000');
-});
+const onError = error => {
+  if (error.syscall !== "listen") {
+    throw error;
+  }
+  const bind = typeof addr === "string" ? "pipe " + addr : "port " + port;
+  switch (error.code) {
+    case "EACCES":
+      console.error(bind + " requires elevated privileges");
+      process.exit(1);
+      break;
+    case "EADDRINUSE":
+      console.error(bind + " is already in use");
+      process.exit(1);
+      break;
+    default:
+      throw error;
+  }
+};
+
+const onListening = () => {
+  const addr = server.address();
+  const bind = typeof addr === "string" ? "pipe " + addr : "port " + port;
+  debug("Listening on " + bind);
+};
+
+const port = normalizePort(process.env.PORT || "3000");
+app.set("port", port);
+
+const server = http.createServer(app);
+server.on("error", onError);
+server.on("listening", onListening);
+server.listen(port);//, '0.0.0.0');

@@ -7,7 +7,7 @@ import { map } from 'rxjs/operators';
   providedIn: 'root'
 })
 export class UploadFileService {
-  private uploadUrl = 'http://localhost:3000/upload'; // Replace with your back-end endpoint
+  private uploadUrl = 'http://192.168.50.37:3000/upload'; // Replace with your back-end endpoint
 
   constructor(private http: HttpClient) { }
 
