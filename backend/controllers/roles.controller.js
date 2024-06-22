@@ -12,9 +12,10 @@ exports.getRoles = (req, res, next) => {
       });
     })
     .catch(error => {
-      console.log(error);
+      console.error(error.message);
       res.status(500).json({
-        message: "Fetching roles failed!"
+        message: "Fetching roles failed!",
+        error: error.message
       });
     });
 
@@ -39,9 +40,10 @@ exports.createRole = (req, res, next) => {
       });
     })
     .catch(error => {
-      console.log(error);
+      console.error(error.message);
       res.status(500).json({
-        message: "Creating a role failed!"
+        message: "Creating a role failed!",
+        error: error.message
       });
     });
 
@@ -65,9 +67,10 @@ exports.updateRole = (req, res, next) => {
       }
     })
     .catch(error => {
-      console.log(error);
+      console.error(error.message);
       res.status(500).json({
-        message: "Couldn't udpate role!"
+        message: "Couldn't udpate role!",
+        error: error.message
       });
     });
 };
@@ -84,9 +87,10 @@ exports.deleteRole = (req, res, next) => {
       }
     })
     .catch(error => {
-      console.log(error);
+      console.error(error.message);
       res.status(500).json({
-        message: "Deleting role failed!"
+        message: "Deleting role failed!",
+        error: error.message
       });
     });
 };

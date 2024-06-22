@@ -1,9 +1,10 @@
 import { Injectable } from "@angular/core";
 import { HttpClient, HttpErrorResponse } from "@angular/common/http";
-import { Subject, catchError, throwError } from "rxjs";
+import { Subject, throwError } from "rxjs";
 
 import { environment } from "../../environments/environment";
 import { Permission } from "../models/permission.model";
+import { catchError } from "rxjs/operators";
 
 const BACKEND_URL = environment.apiUrl + '/permissions/';
 
@@ -26,7 +27,7 @@ export class PermissionsService {
             return this.handleError(error);
         })
       )
-      .subscribe(response => {
+      .subscribe((response: any) => {
         if (response.status == 200 || response.status == 201) {
             if (response.body == null) {
                 return;

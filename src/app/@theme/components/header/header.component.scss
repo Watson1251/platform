@@ -14,9 +14,26 @@
   }
 
   nb-action {
+    cursor: pointer;
     height: auto;
     display: flex;
     align-content: center;
+    
+    font-family: var(--arabic-font);
+    transition: transform 0.3s ease, color 0.3s ease, background-color 0.3s ease;
+  }
+
+  nb-action:hover {
+    transform: scale(1.1);
+    color: #2a75d4; /* Change text color on hover */
+  }
+
+  nb-action:hover nb-icon {
+    color: #2a75d4; /* Change icon color on hover */
+  }
+  
+  nb-icon {
+    margin-left: 5px;
   }
 
   nb-user {

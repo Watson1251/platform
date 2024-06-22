@@ -24,11 +24,13 @@ import { MatSortModule } from '@angular/material/sort';
 import { MatBadgeModule } from '@angular/material/badge';
 import { MatSnackBarModule } from '@angular/material/snack-bar';
 
+import { MatRippleModule } from '@angular/material/core';
 
 
 // this is not a material library, but REACT. Usually used alongside material.
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { DragDropModule } from '@angular/cdk/drag-drop';
+import { MatMomentDateModule } from '@angular/material-moment-adapter';
 
 
 @NgModule({
@@ -47,6 +49,7 @@ import { DragDropModule } from '@angular/cdk/drag-drop';
     MatSelectModule,
     MatProgressSpinnerModule,
     MatDatepickerModule,
+    MatMomentDateModule,
     MatTabsModule,
     MatTableModule,
     MatPaginatorModule,
@@ -55,6 +58,7 @@ import { DragDropModule } from '@angular/cdk/drag-drop';
     MatSortModule,
     MatBadgeModule,
     MatSnackBarModule,
+    MatRippleModule,
 
     FormsModule,
     ReactiveFormsModule,

@@ -1,3 +1,5 @@
+@import '~material-design-icons/iconfont/material-icons.css';
+
 @font-face {
   font-family: "traditional-arabic";
   src: local("traditional-arabic"),
@@ -36,11 +38,13 @@
     --mdc-snackbar-container-color: rgba(71, 136, 25, 0.662);
     --mat-snack-bar-button-color: rgb(255, 255, 255) !important;
     --mdc-snackbar-supporting-text-color: rgb(255, 255, 255) !important;
+    white-space: pre-wrap;
   }
   &.failure {
     --mdc-snackbar-container-color: rgba(136, 47, 25, 0.662);
     --mat-snack-bar-button-color: rgb(255, 255, 255) !important;
     --mdc-snackbar-supporting-text-color: rgb(255, 255, 255) !important;
+    white-space: pre-wrap;
   }
   direction: rtl;
 }
