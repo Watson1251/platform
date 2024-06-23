@@ -70,54 +70,38 @@ export class PrivilegesComponent {
   @ViewChild(MatSort) sort?: MatSort;
   @ViewChild(MatSort, { static: false }) set setSort(content: any) {
     if (content) {
-      this.sort = content;
-      this.dataSource.sort = this.sort as MatSort;
+      setTimeout(() => {
+        this.sort = content;
+        this.dataSource.sort = this.sort as MatSort;
+      });
     }
   }
 
   @ViewChild(MatPaginator) paginator?: MatPaginator;
   @ViewChild(MatPaginator, { static: false }) set setPaginator(content: any) {
     if (content) {
-      this.paginator = content as MatPaginator;
+      setTimeout(() => {
+        this.paginator = content as MatPaginator;
+  
+        this.length = this.defaultLength;
+        this.pageSize = this.defaultPageSize;
+        this.pageIndex = this.defaultPageIndex;
+        this.pageSizeOptions = this.defaultPageSizeOptions;
+  
+        this.paginator._intl.itemsPerPageLabel = 'العناصر:';
+        this.paginator._intl.firstPageLabel = 'الصفحة الأولى';
+        this.paginator._intl.previousPageLabel = 'الصفحة السابقة';
+        this.paginator._intl.nextPageLabel = 'الصفحة التالية';
+        this.paginator._intl.lastPageLabel = 'الصفحة الأخيرة';
+        this.paginator._intl.getRangeLabel = (page: number, pageSize: number, length: number) => {
+          const start = page * pageSize + 1;
+          const end = (page + 1) * pageSize;
+          return `${start.toString()} - ${end.toString()} من ${length.toString()}`;
+        };
+        
+        this.dataSource.paginator = this.paginator;
 
-      this.length = this.defaultLength;
-      this.pageSize = this.defaultPageSize;
-      this.pageIndex = this.defaultPageIndex;
-      this.pageSizeOptions = this.defaultPageSizeOptions;
-
-      this.paginator._intl.itemsPerPageLabel = 'العناصر:';
-      this.paginator._intl.firstPageLabel = 'الصفحة الأولى';
-      this.paginator._intl.previousPageLabel = 'الصفحة السابقة';
-      this.paginator._intl.nextPageLabel = 'الصفحة التالية';
-      this.paginator._intl.lastPageLabel = 'الصفحة الأخيرة';
-      this.paginator._intl.getRangeLabel = (page: number, pageSize: number, length: number) => {
-        const start = page * pageSize + 1;
-        const end = (page + 1) * pageSize;
-        return `${start.toString()} - ${end.toString()} من ${length.toString()}`;
-      };
-
-      const devicesLength = this.roles.length;
-      var index = 0;
-      for (var i = 0; i < this.pageSizeOptions.length; i++) {
-        const pageSize = this.pageSizeOptions[i];
-        index = i;
-        if (devicesLength < pageSize) {
-          break;
-        }
-      };
-
-      if (index == 0) {
-        this.pageSizeOptions = [devicesLength];
-        this.pageSize = devicesLength;
-      } else {
-        this.pageSizeOptions = this.pageSizeOptions.slice(0, index);
-        if (!this.pageSizeOptions.includes(devicesLength)) {
-          this.pageSizeOptions.push(devicesLength);
-        }
-      }
-      
-      this.dataSource.paginator = this.paginator;
-      this.cdr.detectChanges();
+      });
     }
   }
 
@@ -139,21 +123,17 @@ export class PrivilegesComponent {
 
   roles: Role[] = [];
   sortedRoles: Role[] = [];
-  chosenRole: Role = {id: '', role: '', permissions: []};
-  
-  backupPermissions: Permission[] = [];
-  permissions: Permission[] = [];
-
-  tileIsSelected: boolean = false;
   selectedRole: Role = {
     id: '',
     role: '',
     permissions: []
   };
+  
+  // backupPermissions: Permission[] = [];
+  // permissions: Permission[] = [];
 
   constructor(
     public dialog: MatDialog,
-    private cdr: ChangeDetectorRef,
     public rolesService: RolesService,
     public permissionsService: PermissionsService,
     private snackbarService: SnackbarService
@@ -168,21 +148,8 @@ export class PrivilegesComponent {
       this.roles = rolesData;
       this.sortedRoles = this.roles.slice();
 
-      // const sortState: Sort = {active: 'id', direction: 'asc'};
-      // this.sortData(sortState);
-
       this.shownRows = this.generateRows();
-      this.dataSource.data = this.shownRows;
-      
-      console.log(this.shownRows);
-
-      // this.permissionsService.getPermissions();
-      // this.permissionsSub = this.permissionsService.getPermissionsUpdateListener().subscribe((permissionsData: any) => {
-
-      //   this.permissions = permissionsData;
-      //   this.backupPermissions = this.permissions.slice();
-
-      // });
+      this.dataSource = new MatTableDataSource(this.shownRows);
     });
   }
 
@@ -267,7 +234,7 @@ export class PrivilegesComponent {
     const dialogData: RoleDialogInterface = {
       status: status,
       roles: this.roles,
-      targetRole: this.chosenRole
+      targetRole: this.selectedRole
     }
 
     const dialogRef = this.dialog.open(RoleDialogComponent, {
@@ -276,7 +243,7 @@ export class PrivilegesComponent {
 
     dialogRef.afterClosed().subscribe(result => {
       if (result == 'success') {
-        this.chosenRole = {id: '', role: '', permissions: []};
+        this.selectedRole = {id: '', role: '', permissions: []};
 
         if (status == "add") {
           this.snackbarService.openSnackBar('تم إضافة دور جديد بنجاح.', 'success');
@@ -303,10 +270,10 @@ export class PrivilegesComponent {
     } else {
       this.selection.select(row);
 
-      var device = this.roles.find(a => a.id == row.deviceId);
+      var role = this.roles.find(a => a.id == row.roleId);
 
-      if (device) {
-        this.selectedRole = device;
+      if (role) {
+        this.selectedRole = role;
       }
     }
   }
@@ -324,7 +291,25 @@ export class PrivilegesComponent {
     }
   }
 
-  isAllowed(permission: string) {
-    // return this.authService.isAllowed(permission);
+  isAllowed(action: string): boolean {
+    switch (action) {
+      case "add-empty":
+        return this.roles.length == 0;
+
+      case "add":
+        return this.roles.length > 0;
+
+      case "edit":
+        return (this.roles.length > 0) && (this.selectedRole.id != "");
+
+      case "delete":
+        return (this.roles.length > 0) && (this.selectedRole.id != "");
+
+      case "view":
+        return this.roles.length > 0;
+
+      default:
+        return false;
+    }
   }
 }

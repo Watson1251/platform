@@ -1,28 +1,28 @@
 <nb-card>
-    <nb-card-header> إدارة الأدوار </nb-card-header>
+    <nb-card-header> إدارة الصلاحيات </nb-card-header>
   
     <nb-card-body>
       <div style="display: flex">
-        <button mat-icon-button *ngIf="roles.length > 0" (click)="roleDialog('add')">
+        <button mat-icon-button *ngIf="isAllowed('add')" (click)="roleDialog('add')">
           <mat-icon class="add-button">add</mat-icon>
         </button>
-        <button mat-icon-button *ngIf="roles.length > 0" (click)="roleDialog('edit')">
+        <button mat-icon-button *ngIf="isAllowed('edit')" (click)="roleDialog('edit')">
           <mat-icon class="edit-button">edit</mat-icon>
         </button>
-        <button mat-icon-button *ngIf="roles.length > 0" (click)="roleDialog('delete')">
+        <button mat-icon-button *ngIf="isAllowed('delete')" (click)="roleDialog('delete')">
           <mat-icon class="delete-button">delete</mat-icon>
         </button>
   
-        <mat-form-field *ngIf="roles.length > 0" class="search-field">
+        <mat-form-field *ngIf="isAllowed('view')" class="search-field">
           <mat-label>البحث بواسطة أي حقل من الحقول</mat-label>
           <input matInput (keyup)="applyFilter($event)" [value]="searchValue" />
         </mat-form-field>
   
-        <div class="container-fluid no-items-container" *ngIf="roles.length == 0">
+        <div class="container-fluid no-items-container" *ngIf="isAllowed('add-empty')">
           <h5 class="no-items-label">
             لا توجد أدوار مسجلة
           </h5>
-          <button mat-fab extended *ngIf="roles.length == 0" (click)="roleDialog('add')">
+          <button mat-fab extended (click)="roleDialog('add')">
             <mat-icon>add</mat-icon> إضافة جديد
           </button>
         </div>
@@ -30,7 +30,7 @@
   
       <div class="display: flex;">
   
-        <div class="mat-elevation-z8" *ngIf="roles.length > 0">
+        <div class="mat-elevation-z8" *ngIf="isAllowed('view')">
           <table
             mat-table
             [dataSource]="dataSource"
@@ -95,11 +95,5 @@
         </div>
       </div>
     </nb-card-body>
-  </nb-card>
-  
-  <nb-card>
-    <nb-card-header> إدارة الصلاحيات </nb-card-header>
-  
-    <nb-card-body> </nb-card-body>
   </nb-card>
   

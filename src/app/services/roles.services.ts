@@ -120,13 +120,18 @@ export class RolesService {
     
     // Client-side error occurred
     if (error.error instanceof ErrorEvent) {
-        message = 'حدث خطأ.\n';
+      message = 'حدث خطأ في العميل.';
     
     // Server-side error occurred
     } else {
-        message = 'حدث خطأ في السيرفر.\n';
+      message = 'حدث خطأ في المزود.';
     }
-    message += error.error.error;
+
+    if (error.error.message) {
+      message += "\n";
+      message += error.error.message;
+    }
+
     this.snackbarService.openSnackBar(message, 'failure');
     return throwError(message);
   }

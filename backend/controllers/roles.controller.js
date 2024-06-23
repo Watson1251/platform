@@ -14,8 +14,7 @@ exports.getRoles = (req, res, next) => {
     .catch(error => {
       console.error(error.message);
       res.status(500).json({
-        message: "Fetching roles failed!",
-        error: error.message
+        message: error.message
       });
     });
 
@@ -42,8 +41,7 @@ exports.createRole = (req, res, next) => {
     .catch(error => {
       console.error(error.message);
       res.status(500).json({
-        message: "Creating a role failed!",
-        error: error.message
+        message: error.message
       });
     });
 
@@ -59,8 +57,7 @@ exports.updateRole = (req, res, next) => {
 
   Role.updateOne({ _id: role._id }, role)
     .then(result => {
-
-      if (result.modifiedCount > 0) {
+      if (result.n > 0) {
         res.status(200).json({ message: "Update successful!" });
       } else {
         res.status(401).json({ message: "Update failed!" });
@@ -69,8 +66,7 @@ exports.updateRole = (req, res, next) => {
     .catch(error => {
       console.error(error.message);
       res.status(500).json({
-        message: "Couldn't udpate role!",
-        error: error.message
+        message: error.message
       });
     });
 };
@@ -89,8 +85,7 @@ exports.deleteRole = (req, res, next) => {
     .catch(error => {
       console.error(error.message);
       res.status(500).json({
-        message: "Deleting role failed!",
-        error: error.message
+        message: error.message
       });
     });
 };
