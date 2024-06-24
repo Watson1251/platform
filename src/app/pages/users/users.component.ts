@@ -1,23 +1,24 @@
 import { SelectionModel } from '@angular/cdk/collections';
-import { Component, Input, ViewChild } from '@angular/core';
-import { MatPaginator, MatPaginatorIntl, PageEvent } from '@angular/material/paginator';
-import { MatSort, MatSortable, Sort } from '@angular/material/sort';
+import { Component, ViewChild } from '@angular/core';
+import { MatPaginator, PageEvent } from '@angular/material/paginator';
+import { MatSort, Sort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { Subscription } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
 import { DateAdapter, MAT_DATE_FORMATS, MAT_DATE_LOCALE } from '@angular/material/core';
 import { MAT_MOMENT_DATE_ADAPTER_OPTIONS, MAT_MOMENT_DATE_FORMATS, MomentDateAdapter } from '@angular/material-moment-adapter';
-import * as moment from 'moment';
-import { Device } from '../../models/device.model';
-import { Movement } from '../../models/movement.model';
-import { Note } from '../../models/note.model';
-import { User } from '../../models/user.model';
+import { Role } from '../../models/role.model';
+import { RoleDialogInterface } from './role-dialog/role-dialog-interface';
+import { RoleDialogComponent } from './role-dialog/role-dialog.component';
+import { SnackbarService } from '../../services/snackbar.service';
+import { RolesService } from '../../services/roles.services';
+import { PermissionsService } from '../../services/permissions.services';
+import { Helper } from '../../shared/helpers';
 
 interface RowData {
   id: number,
-  name: string,
-  username: string,
-  role: string
+  roleId: string,
+  role: string,
 }
 
 @Component({
@@ -35,185 +36,109 @@ interface RowData {
   ],
 })
 export class UsersComponent {
+  
+  Helper = Helper;
 
-  displayedColumns: string[] = ['select', 'id', 'name', 'username', 'role'];
+  shownRows: RowData[] = [];
+
+  displayedColumns: string[] = ['select', 'id', 'role'];
 
   dataSource: MatTableDataSource<RowData>;
   selection = new SelectionModel<RowData>(true, []);
 
-  @ViewChild(MatSort) sort?: MatSort;
+  @ViewChild(MatSort, { static: true }) sort!: MatSort;
   @ViewChild(MatSort, { static: false }) set setSort(content: any) {
     if (content) {
-      this.sort = content;
-      this.dataSource.sort = this.sort as MatSort;
+      setTimeout(() => {
+        this.sort = content;
+        this.dataSource.sort = this.sort as MatSort;
+      });
     }
   }
 
-  @ViewChild(MatPaginator) paginator?: MatPaginator;
-  @ViewChild(MatPaginator, { static: false }) set setPaginator(content: any) {
-    if (content) {
-      this.paginator = content as MatPaginator;
+  private rolesSub?: Subscription;
 
-      this.length = this.defaultLength;
-      this.pageSize = this.defaultPageSize;
-      this.pageIndex = this.defaultPageIndex;
-      this.pageSizeOptions = this.defaultPageSizeOptions;
+  searchValue: string = "";
 
-      this.paginator._intl.itemsPerPageLabel = 'العناصر:';
-      this.paginator._intl.firstPageLabel = 'الصفحة الأولى';
-      this.paginator._intl.previousPageLabel = 'الصفحة السابقة';
-      this.paginator._intl.nextPageLabel = 'الصفحة التالية';
-      this.paginator._intl.lastPageLabel = 'الصفحة الأخيرة';
-      this.paginator._intl.getRangeLabel = (page: number, pageSize: number, length: number) => {
-        const start = page * pageSize + 1;
-        const end = (page + 1) * pageSize;
-        return `${start.toString()} - ${end.toString()} من ${length.toString()}`;
-      };
-
-      this.dataSource.paginator = this.paginator;
-    }
-  }
-
-  users: User[] = [];
-  sortedUsers: User[] = [];
-  shownRows: RowData[] = [
-    {
-      id: 0,
-      name: "عبدالرحمن الصابري",
-      username: "am3737",
-      role: "admin"
-    },
-    {
-      id: 1,
-      name: "شهاب علي",
-      username: "sa",
-      role: "user"
-    },
-    {
-      id: 2,
-      name: "محمد أحمد",
-      username: "ma",
-      role: "user"
-    },
-    {
-      id: 3,
-      name: "ناصر سالم",
-      username: "ns",
-      role: "admin"
-    }
-  ];
-
-  selectedUser: User = {
+  roles: Role[] = [];
+  sortedRoles: Role[] = [];
+  selectedRole: Role = {
     id: '',
-    name: '',
-    username: '',
-    role: ''
+    role: '',
+    permissions: []
   };
 
-  activeIndex = 0;
-
-  defaultLength = 5;
-  defaultPageSize = 5;
-  defaultPageIndex = 0;
-  defaultPageSizeOptions = [5, 10, 25];
-
-  length = 5;
-  pageSize = 5;
-  pageIndex = 0;
-  pageSizeOptions = [5, 10, 25];
-
-  hidePageSize = false;
-  showPageSizeOptions = true;
-  showFirstLastButtons = true;
-  disabled = false;
-
-  iterations = 5;
-
-  pageEvent?: PageEvent;
-
-  handlePageEvent(e: PageEvent) {
-    this.pageEvent = e;
-    this.length = e.length;
-    this.pageSize = e.pageSize;
-    this.pageIndex = e.pageIndex;
-  }
-
   constructor(
+    public dialog: MatDialog,
+    public rolesService: RolesService,
+    public permissionsService: PermissionsService,
+    private snackbarService: SnackbarService
   ) {
-    // this.shownRows = this.generateRows();
+    this.shownRows = this.generateRows();
     this.dataSource = new MatTableDataSource(this.shownRows);
+    this.dataSource.sort = this.sort as MatSort;
   }
 
   ngOnInit() {
+    this.rolesService.getRoles();
+    this.rolesSub = this.rolesService.getRolesUpdateListener().subscribe((rolesData: any) => {
+      this.roles = rolesData;
+      this.sortedRoles = this.roles.slice();
+
+      this.shownRows = this.generateRows();
+      this.dataSource = new MatTableDataSource(this.shownRows);
+      this.dataSource.sort = this.sort as MatSort;
+    });
   }
 
   ngOnDestroy() {
+    this.rolesSub?.unsubscribe();
   }
 
-  getUser(id: string) {
+  generateRows() {
+    var rowData: RowData[] = [];
 
+    for (let i = 1; i <= this.sortedRoles.length; i++) {
+      const role = this.sortedRoles[i-1];
+      const data: RowData = {
+        id: i,
+        roleId: role.id,
+        role: role.role
+      };
+      rowData.push(data);
+    }
+
+    return rowData;
   }
 
   sortData(sort: Sort) {
-    const data = this.users.slice();
-    if (!sort.active || sort.direction === '') {
-      this.sortedUsers = data;
-      return;
+    Helper.sortData(sort, this.roles, this.sortedRoles)
+  }
+
+  roleDialog(status: string) {
+    const dialogData: RoleDialogInterface = {
+      status: status,
+      roles: this.roles,
+      targetRole: this.selectedRole
     }
 
-    // this.sortedUsers = data.sort((a, b) => {
-    //   const isAsc = sort.direction === 'asc';
-    //   switch (sort.active) {
-    //     case 'movement_timestamp':
-    //       return this.compare(a.movement_timestamp, b.movement_timestamp, isAsc);
-    //     case 'movement_from':
-    //       return this.compare(a.movement_from, b.movement_from, isAsc);
-    //     case 'movement_to':
-    //       return this.compare(a.movement_to, b.movement_to, isAsc);
-    //     case 'moved_by':
-    //       return this.compare(a.moved_by, b.moved_by, isAsc);
-    //     default:
-    //       return 0;
-    //   }
-    // });
-  }
+    const dialogRef = this.dialog.open(RoleDialogComponent, {
+      data: dialogData,
+    });
 
-  compare(a: number | string, b: number | string, isAsc: boolean) {
-    return (a < b ? -1 : 1) * (isAsc ? 1 : -1);
-  }
+    dialogRef.afterClosed().subscribe(result => {
+      if (result == 'success') {
+        this.selectedRole = {id: '', role: '', permissions: []};
 
-  showDate(timestamp: number) {
-    return moment(timestamp).locale("ar").format('LL');
-  }
-
-  enToAr(number: number | string) {
-    const arabicDigits = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
-    const numberString = String(number);
-
-    let arabicNumber = '';
-    for (let i = 0; i < numberString.length; i++) {
-      const digit = parseInt(numberString[i], 10);
-      if (!isNaN(digit)) {
-        arabicNumber += arabicDigits[digit];
-      } else {
-        arabicNumber += numberString[i];
+        if (status == "add") {
+          this.snackbarService.openSnackBar('تم إضافة دور جديد بنجاح.', 'success');
+        } else if (status == "edit") {
+          this.snackbarService.openSnackBar('تم تعديل الدور بنجاح.', 'success');
+        } else if (status == "delete") {
+          this.snackbarService.openSnackBar('تم حذف الدور بنجاح.', 'success');
+        }
       }
-    }
-
-    return arabicNumber;
-  }
-
-  arToEn(input: string) {
-    const arabicNumbers = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
-    const englishNumbers = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
-
-    // Replace each Arabic number with its corresponding English number
-    for (let i = 0; i < arabicNumbers.length; i++) {
-      const arabicRegex = new RegExp(arabicNumbers[i], 'g');
-      input = input.replace(arabicRegex, englishNumbers[i]);
-    }
-
-    return input;
+    });
   }
 
   isSelected(row: any) {
@@ -222,20 +147,19 @@ export class UsersComponent {
 
     if (isSelected) {
       this.selection.deselect(row);
+      this.selectedRole = {
+        id: '',
+        role: '',
+        permissions: []
+      };
     } else {
       this.selection.select(row);
 
-      var time = new Date().getTime();
-      var targetUser = this.users.find(i => i.id == row.id);
+      var role = this.roles.find(a => a.id == row.roleId);
 
-      const user: User = {
-        id: row.id,
-        name: row.name,
-        username: row.username,
-        role: row.role
+      if (role) {
+        this.selectedRole = role;
       }
-
-      this.selectedUser = user;
     }
   }
 
@@ -252,15 +176,25 @@ export class UsersComponent {
     }
   }
 
-  movementDialog(status: string) {
-    
-  }
+  isAllowed(action: string): boolean {
+    switch (action) {
+      case "add-empty":
+        return this.roles.length == 0;
 
-  noteDialog(status: string, row: any) {
-    
-  }
+      case "add":
+        return this.roles.length > 0;
 
-  isAllowed(permission: string) {
-  }
+      case "edit":
+        return (this.roles.length > 0) && (this.selectedRole.id != "");
 
+      case "delete":
+        return (this.roles.length > 0) && (this.selectedRole.id != "");
+
+      case "view":
+        return this.roles.length > 0;
+
+      default:
+        return false;
+    }
+  }
 }

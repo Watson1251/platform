@@ -1,26 +1,19 @@
 import { SelectionModel } from '@angular/cdk/collections';
-import { ChangeDetectorRef, Component, HostListener, Input, ViewChild } from '@angular/core';
-import { MatPaginator, MatPaginatorIntl, PageEvent } from '@angular/material/paginator';
-import { MatSort, MatSortable, Sort } from '@angular/material/sort';
+import { Component, ViewChild } from '@angular/core';
+import { MatPaginator, PageEvent } from '@angular/material/paginator';
+import { MatSort, Sort } from '@angular/material/sort';
 import { MatTableDataSource } from '@angular/material/table';
 import { Subscription } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
 import { DateAdapter, MAT_DATE_FORMATS, MAT_DATE_LOCALE } from '@angular/material/core';
 import { MAT_MOMENT_DATE_ADAPTER_OPTIONS, MAT_MOMENT_DATE_FORMATS, MomentDateAdapter } from '@angular/material-moment-adapter';
-import * as moment from 'moment';
-import { Device } from '../../models/device.model';
-import { Movement } from '../../models/movement.model';
-import { Note } from '../../models/note.model';
-import { User } from '../../models/user.model';
 import { Role } from '../../models/role.model';
 import { RoleDialogInterface } from './role-dialog/role-dialog-interface';
 import { RoleDialogComponent } from './role-dialog/role-dialog.component';
 import { SnackbarService } from '../../services/snackbar.service';
 import { RolesService } from '../../services/roles.services';
 import { PermissionsService } from '../../services/permissions.services';
-import { Permission } from '../../models/permission.model';
-// import { DeviceDialogInterface } from './devices/device-dialog/device-dialog-interface';
-// import { DeviceDialogComponent } from './devices/device-dialog/device-dialog.component';
+import { Helper } from '../../shared/helpers';
 
 interface RowData {
   id: number,
@@ -43,22 +36,8 @@ interface RowData {
   ],
 })
 export class PrivilegesComponent {
-
-  // ============================= PAGINATION =============================
-  defaultLength = 5;
-  defaultPageSize = 5;
-  defaultPageIndex = 0;
-  defaultPageSizeOptions = [5, 10, 25, 50, 100];
-
-  length = 5;
-  pageSize = 5;
-  pageIndex = 0;
-  pageSizeOptions = [5, 10, 25, 50, 100];
-
-  hidePageSize = false;
-  showPageSizeOptions = true;
-  showFirstLastButtons = true;
-  disabled = false;
+  
+  Helper = Helper;
 
   shownRows: RowData[] = [];
 
@@ -67,7 +46,7 @@ export class PrivilegesComponent {
   dataSource: MatTableDataSource<RowData>;
   selection = new SelectionModel<RowData>(true, []);
 
-  @ViewChild(MatSort) sort?: MatSort;
+  @ViewChild(MatSort, { static: true }) sort!: MatSort;
   @ViewChild(MatSort, { static: false }) set setSort(content: any) {
     if (content) {
       setTimeout(() => {
@@ -77,47 +56,7 @@ export class PrivilegesComponent {
     }
   }
 
-  @ViewChild(MatPaginator) paginator?: MatPaginator;
-  @ViewChild(MatPaginator, { static: false }) set setPaginator(content: any) {
-    if (content) {
-      setTimeout(() => {
-        this.paginator = content as MatPaginator;
-  
-        this.length = this.defaultLength;
-        this.pageSize = this.defaultPageSize;
-        this.pageIndex = this.defaultPageIndex;
-        this.pageSizeOptions = this.defaultPageSizeOptions;
-  
-        this.paginator._intl.itemsPerPageLabel = 'العناصر:';
-        this.paginator._intl.firstPageLabel = 'الصفحة الأولى';
-        this.paginator._intl.previousPageLabel = 'الصفحة السابقة';
-        this.paginator._intl.nextPageLabel = 'الصفحة التالية';
-        this.paginator._intl.lastPageLabel = 'الصفحة الأخيرة';
-        this.paginator._intl.getRangeLabel = (page: number, pageSize: number, length: number) => {
-          const start = page * pageSize + 1;
-          const end = (page + 1) * pageSize;
-          return `${start.toString()} - ${end.toString()} من ${length.toString()}`;
-        };
-        
-        this.dataSource.paginator = this.paginator;
-
-      });
-    }
-  }
-
-  pageEvent?: PageEvent;
-
-  handlePageEvent(e: PageEvent) {
-    this.pageEvent = e;
-    this.length = e.length;
-    this.pageSize = e.pageSize;
-    this.pageIndex = e.pageIndex;
-  }
-  // ============================= PAGINATION =============================
-
   private rolesSub?: Subscription;
-  private permissionsSub?: Subscription;
-  public data: any = null;
 
   searchValue: string = "";
 
@@ -128,9 +67,6 @@ export class PrivilegesComponent {
     role: '',
     permissions: []
   };
-  
-  // backupPermissions: Permission[] = [];
-  // permissions: Permission[] = [];
 
   constructor(
     public dialog: MatDialog,
@@ -140,6 +76,7 @@ export class PrivilegesComponent {
   ) {
     this.shownRows = this.generateRows();
     this.dataSource = new MatTableDataSource(this.shownRows);
+    this.dataSource.sort = this.sort as MatSort;
   }
 
   ngOnInit() {
@@ -150,12 +87,12 @@ export class PrivilegesComponent {
 
       this.shownRows = this.generateRows();
       this.dataSource = new MatTableDataSource(this.shownRows);
+      this.dataSource.sort = this.sort as MatSort;
     });
   }
 
   ngOnDestroy() {
     this.rolesSub?.unsubscribe();
-    this.permissionsSub?.unsubscribe();
   }
 
   generateRows() {
@@ -175,59 +112,7 @@ export class PrivilegesComponent {
   }
 
   sortData(sort: Sort) {
-    const data = this.roles.slice();
-    if (!sort.active || sort.direction === '') {
-      this.sortedRoles = data;
-      return;
-    }
-
-    this.sortedRoles = data.sort((a, b) => {
-      const isAsc = sort.direction === 'asc';
-      switch (sort.active) {
-        case 'role':
-          return this.compare(a.role, b.role, isAsc);
-        default:
-          return 0;
-      }
-    });
-  }
-
-  compare(a: number | string, b: number | string, isAsc: boolean) {
-    return (a < b ? -1 : 1) * (isAsc ? 1 : -1);
-  }
-
-  showDate(timestamp: number) {
-    return moment(timestamp).locale("ar").format('LL');
-  }
-
-  enToAr(number: number | string) {
-    const arabicDigits = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
-    const numberString = String(number);
-
-    let arabicNumber = '';
-    for (let i = 0; i < numberString.length; i++) {
-      const digit = parseInt(numberString[i], 10);
-      if (!isNaN(digit)) {
-        arabicNumber += arabicDigits[digit];
-      } else {
-        arabicNumber += numberString[i];
-      }
-    }
-
-    return arabicNumber;
-  }
-
-  arToEn(input: string) {
-    const arabicNumbers = ['٠', '١', '٢', '٣', '٤', '٥', '٦', '٧', '٨', '٩'];
-    const englishNumbers = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
-
-    // Replace each Arabic number with its corresponding English number
-    for (let i = 0; i < arabicNumbers.length; i++) {
-      const arabicRegex = new RegExp(arabicNumbers[i], 'g');
-      input = input.replace(arabicRegex, englishNumbers[i]);
-    }
-
-    return input;
+    Helper.sortData(sort, this.roles, this.sortedRoles)
   }
 
   roleDialog(status: string) {

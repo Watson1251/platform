@@ -3,6 +3,7 @@ import { NbCardModule, NbIconModule, NbInputModule, NbTreeGridModule } from '@ne
 import { AngularMaterialModule } from '../../angular-material.module';
 import { ThemeModule } from '../../@theme/theme.module';
 import { PrivilegesComponent } from './privileges.component';
+import { PaginatorModule } from '../../shared/paginator/paginator.module';
 
 @NgModule({
   imports: [
@@ -11,7 +12,8 @@ import { PrivilegesComponent } from './privileges.component';
     NbIconModule,
     NbInputModule,
     ThemeModule,
-    AngularMaterialModule
+    AngularMaterialModule,
+    PaginatorModule
   ],
   declarations: [
     PrivilegesComponent

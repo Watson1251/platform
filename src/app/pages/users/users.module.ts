@@ -1,10 +1,9 @@
 import { NgModule } from '@angular/core';
 import { NbCardModule, NbIconModule, NbInputModule, NbTreeGridModule } from '@nebular/theme';
-import { Ng2SmartTableModule } from 'ng2-smart-table';
-
+import { AngularMaterialModule } from '../../angular-material.module';
 import { ThemeModule } from '../../@theme/theme.module';
 import { UsersComponent } from './users.component';
-import { AngularMaterialModule } from '../../angular-material.module';
+import { PaginatorModule } from '../../shared/paginator/paginator.module';
 
 @NgModule({
   imports: [
@@ -13,8 +12,8 @@ import { AngularMaterialModule } from '../../angular-material.module';
     NbIconModule,
     NbInputModule,
     ThemeModule,
-    Ng2SmartTableModule,
-    AngularMaterialModule
+    AngularMaterialModule,
+    PaginatorModule
   ],
   declarations: [
     UsersComponent

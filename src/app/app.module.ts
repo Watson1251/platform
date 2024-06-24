@@ -22,9 +22,12 @@ import {
 } from '@nebular/theme';
 import { AngularMaterialModule } from './angular-material.module';
 import { AuthInterceptor } from './auth-interceptor';
+import { PaginatorComponent } from './shared/paginator/paginator.component';
 
 @NgModule({
-  declarations: [AppComponent],
+  declarations: [
+    AppComponent
+  ],
   imports: [
     BrowserModule,
     BrowserAnimationsModule,
@@ -46,7 +49,7 @@ import { AuthInterceptor } from './auth-interceptor';
   providers: [
     { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },
   ],
-  bootstrap: [AppComponent],
+  bootstrap: [AppComponent]
 })
 export class AppModule {
 }
