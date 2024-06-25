@@ -7,17 +7,20 @@ import { Subscription } from 'rxjs';
 import { MatDialog } from '@angular/material/dialog';
 import { DateAdapter, MAT_DATE_FORMATS, MAT_DATE_LOCALE } from '@angular/material/core';
 import { MAT_MOMENT_DATE_ADAPTER_OPTIONS, MAT_MOMENT_DATE_FORMATS, MomentDateAdapter } from '@angular/material-moment-adapter';
-import { Role } from '../../models/role.model';
-import { RoleDialogInterface } from './role-dialog/role-dialog-interface';
-import { RoleDialogComponent } from './role-dialog/role-dialog.component';
 import { SnackbarService } from '../../services/snackbar.service';
-import { RolesService } from '../../services/roles.services';
-import { PermissionsService } from '../../services/permissions.services';
 import { Helper } from '../../shared/helpers';
+import { User } from '../../models/user.model';
+import { UsersService } from '../../services/users.services';
+import { UserDialogInterface } from './user-dialog/user-dialog-interface';
+import { UserDialogComponent } from './user-dialog/user-dialog.component';
+import { Role } from '../../models/role.model';
+import { RolesService } from '../../services/roles.services';
 
 interface RowData {
   id: number,
-  roleId: string,
+  userId: string,
+  name: string,
+  username: string,
   role: string,
 }
 
@@ -41,7 +44,7 @@ export class UsersComponent {
 
   shownRows: RowData[] = [];
 
-  displayedColumns: string[] = ['select', 'id', 'role'];
+  displayedColumns: string[] = ['select', 'id', 'name', 'username', 'role'];
 
   dataSource: MatTableDataSource<RowData>;
   selection = new SelectionModel<RowData>(true, []);
@@ -57,21 +60,24 @@ export class UsersComponent {
   }
 
   private rolesSub?: Subscription;
+  private usersSub?: Subscription;
 
   searchValue: string = "";
 
   roles: Role[] = [];
-  sortedRoles: Role[] = [];
-  selectedRole: Role = {
+  users: User[] = [];
+  sortedUsers: User[] = [];
+  selectedUser: User = {
     id: '',
-    role: '',
-    permissions: []
+    name: '',
+    username: '',
+    roleId: ''
   };
 
   constructor(
     public dialog: MatDialog,
     public rolesService: RolesService,
-    public permissionsService: PermissionsService,
+    public usersService: UsersService,
     private snackbarService: SnackbarService
   ) {
     this.shownRows = this.generateRows();
@@ -80,29 +86,41 @@ export class UsersComponent {
   }
 
   ngOnInit() {
+
     this.rolesService.getRoles();
     this.rolesSub = this.rolesService.getRolesUpdateListener().subscribe((rolesData: any) => {
       this.roles = rolesData;
-      this.sortedRoles = this.roles.slice();
 
-      this.shownRows = this.generateRows();
-      this.dataSource = new MatTableDataSource(this.shownRows);
-      this.dataSource.sort = this.sort as MatSort;
+      this.usersService.getUsers();
+      this.usersSub = this.usersService.getUsersUpdateListener().subscribe((usersData: any) => {
+        this.users = usersData;
+        this.sortedUsers = this.users.slice();
+  
+        this.shownRows = this.generateRows();
+        this.dataSource = new MatTableDataSource(this.shownRows);
+        this.dataSource.sort = this.sort as MatSort;
+      });
+
     });
   }
 
   ngOnDestroy() {
+    this.usersSub?.unsubscribe();
     this.rolesSub?.unsubscribe();
   }
 
   generateRows() {
     var rowData: RowData[] = [];
 
-    for (let i = 1; i <= this.sortedRoles.length; i++) {
-      const role = this.sortedRoles[i-1];
+    for (let i = 1; i <= this.sortedUsers.length; i++) {
+      const user = this.sortedUsers[i-1];
+      const role: Role = this.roles.find(object => object.id == user.roleId) as Role;
+      
       const data: RowData = {
         id: i,
-        roleId: role.id,
+        userId: user.id,
+        name: user.name,
+        username: user.username,
         role: role.role
       };
       rowData.push(data);
@@ -112,30 +130,42 @@ export class UsersComponent {
   }
 
   sortData(sort: Sort) {
-    Helper.sortData(sort, this.roles, this.sortedRoles)
+    Helper.sortData(sort, this.users, this.sortedUsers)
   }
 
-  roleDialog(status: string) {
-    const dialogData: RoleDialogInterface = {
+  getRoleById(id: string) {
+    const obj = this.roles.find(item => item.id === id);
+    return obj ? obj['role'] : undefined;
+  }
+
+  openDialog(status: string) {
+
+    const dialogData: UserDialogInterface = {
       status: status,
+      selectedUser: this.selectedUser,
+      users: this.users,
       roles: this.roles,
-      targetRole: this.selectedRole
     }
 
-    const dialogRef = this.dialog.open(RoleDialogComponent, {
+    const dialogRef = this.dialog.open(UserDialogComponent, {
       data: dialogData,
     });
 
     dialogRef.afterClosed().subscribe(result => {
       if (result == 'success') {
-        this.selectedRole = {id: '', role: '', permissions: []};
+        this.selectedUser = {
+          id: '',
+          name: '',
+          username: '',
+          roleId: ''
+        };
 
         if (status == "add") {
-          this.snackbarService.openSnackBar('تم إضافة دور جديد بنجاح.', 'success');
+          this.snackbarService.openSnackBar('تم إضافة مستخدم جديد بنجاح.', 'success');
         } else if (status == "edit") {
-          this.snackbarService.openSnackBar('تم تعديل الدور بنجاح.', 'success');
+          this.snackbarService.openSnackBar('تم تعديل المستخدم بنجاح.', 'success');
         } else if (status == "delete") {
-          this.snackbarService.openSnackBar('تم حذف الدور بنجاح.', 'success');
+          this.snackbarService.openSnackBar('تم حذف المستخدم بنجاح.', 'success');
         }
       }
     });
@@ -147,18 +177,19 @@ export class UsersComponent {
 
     if (isSelected) {
       this.selection.deselect(row);
-      this.selectedRole = {
+      this.selectedUser = {
         id: '',
-        role: '',
-        permissions: []
+        name: '',
+        username: '',
+        roleId: ''
       };
     } else {
       this.selection.select(row);
 
-      var role = this.roles.find(a => a.id == row.roleId);
+      var user = this.users.find(a => a.id == row.userId);
 
-      if (role) {
-        this.selectedRole = role;
+      if (user) {
+        this.selectedUser = user;
       }
     }
   }
@@ -179,19 +210,19 @@ export class UsersComponent {
   isAllowed(action: string): boolean {
     switch (action) {
       case "add-empty":
-        return this.roles.length == 0;
+        return this.users.length == 0;
 
       case "add":
-        return this.roles.length > 0;
+        return this.users.length > 0;
 
       case "edit":
-        return (this.roles.length > 0) && (this.selectedRole.id != "");
+        return (this.users.length > 0) && (this.selectedUser.id != "");
 
       case "delete":
-        return (this.roles.length > 0) && (this.selectedRole.id != "");
+        return (this.users.length > 0) && (this.selectedUser.id != "");
 
       case "view":
-        return this.roles.length > 0;
+        return this.users.length > 0;
 
       default:
         return false;

@@ -43,21 +43,21 @@ export class AuthGuard implements CanActivate {
 
     if (route.url.length > 0) {
       const path = route.url[0].path as String;
-      var array: string[] = [];
+      var permissions: string[] = [];
 
       switch (path) {
         case "permissions":
-          array = this.paths.permissions;
+          permissions = this.paths.permissions;
           break;
         case "users":
-          array = this.paths.users;
+          permissions = this.paths.users;
           break;
         case "devices":
-          array = this.paths.devices;
+          permissions = this.paths.devices;
           break;
       }
 
-      array.forEach(item => {
+      permissions.forEach(item => {
         // console.log(this.authService.isAllowed(item));
         if (this.authService.isAllowed(item)) {
           isValid = true;
@@ -75,8 +75,8 @@ export class AuthGuard implements CanActivate {
 
     if (!isAuth) {
       this.snackbarService.openSnackBar('الرجاء تسجيل الدخول أولا', 'failure');
-      this.authService.logout();
-      this.router.navigate(['/login']);
+      // this.authService.logout();
+      this.router.navigate(['/auth/login']);
     }
 
     return isAuth;

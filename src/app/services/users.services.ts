@@ -1,9 +1,11 @@
 import { Injectable } from "@angular/core";
 import { HttpClient, HttpErrorResponse } from "@angular/common/http";
-import { Subject, catchError, throwError } from "rxjs";
+import { Subject, throwError } from "rxjs";
 
 import { environment } from "../../environments/environment";
 import { User } from "../models/user.model";
+import { catchError } from "rxjs/operators";
+import { SnackbarService } from "./snackbar.service";
 
 const BACKEND_URL = environment.apiUrl + '/users/';
 
@@ -13,7 +15,10 @@ export class UsersService {
   private users: User[] = [];
   private usersUpdated = new Subject<any>();
 
-  constructor(private http: HttpClient) {}
+  constructor(
+    private http: HttpClient,
+    private snackbarService: SnackbarService
+  ) {}
 
   getUsers() {
     this.http
@@ -40,8 +45,7 @@ export class UsersService {
                     id: item._id,
                     name: item.name,
                     username: item.username,
-                    isMale: item.isMale,
-                    role: item.role,
+                    roleId: item.roleId,
                 }
                 tempUsers.push(user);
             });
@@ -108,14 +112,24 @@ export class UsersService {
   }
 
   handleError(error: HttpErrorResponse) {
+    var message = '';
+    
+    // Client-side error occurred
     if (error.error instanceof ErrorEvent) {
-        // Client-side error occurred
-        console.error('Client-side error:', error.error.message);
+      message = 'حدث خطأ في العميل.';
+    
+    // Server-side error occurred
     } else {
-        // Server-side error occurred
-        console.error('Server-side error:', error.status, error.error);
+      message = 'حدث خطأ في المزود.';
     }
-    return throwError('Something went wrong. Please try again later.');
+
+    if (error.error.message) {
+      message += "\n";
+      message += error.error.message;
+    }
+
+    this.snackbarService.openSnackBar(message, 'failure');
+    return throwError(message);
   }
 
   getUsersUpdateListener() {

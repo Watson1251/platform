@@ -115,7 +115,7 @@ export class PrivilegesComponent {
     Helper.sortData(sort, this.roles, this.sortedRoles)
   }
 
-  roleDialog(status: string) {
+  openDialog(status: string) {
     const dialogData: RoleDialogInterface = {
       status: status,
       roles: this.roles,

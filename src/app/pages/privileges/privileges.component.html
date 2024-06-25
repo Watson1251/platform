@@ -3,13 +3,13 @@
   
     <nb-card-body>
       <div style="display: flex">
-        <button mat-icon-button *ngIf="isAllowed('add')" (click)="roleDialog('add')">
+        <button mat-icon-button *ngIf="isAllowed('add')" (click)="openDialog('add')">
           <mat-icon class="add-button">add</mat-icon>
         </button>
-        <button mat-icon-button *ngIf="isAllowed('edit')" (click)="roleDialog('edit')">
+        <button mat-icon-button *ngIf="isAllowed('edit')" (click)="openDialog('edit')">
           <mat-icon class="edit-button">edit</mat-icon>
         </button>
-        <button mat-icon-button *ngIf="isAllowed('delete')" (click)="roleDialog('delete')">
+        <button mat-icon-button *ngIf="isAllowed('delete')" (click)="openDialog('delete')">
           <mat-icon class="delete-button">delete</mat-icon>
         </button>
   
@@ -22,7 +22,7 @@
           <h5 class="no-items-label">
             لا توجد أدوار مسجلة
           </h5>
-          <button mat-fab extended (click)="roleDialog('add')">
+          <button mat-fab extended (click)="openDialog('add')">
             <mat-icon>add</mat-icon> إضافة جديد
           </button>
         </div>

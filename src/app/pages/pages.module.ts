@@ -23,7 +23,7 @@ import { UsersModule } from './users/users.module';
   ],
   declarations: [
     PagesComponent,
-  ],
+  ]
 })
 export class PagesModule {
 }

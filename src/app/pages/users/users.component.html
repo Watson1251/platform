@@ -3,13 +3,13 @@
   
     <nb-card-body>
       <div style="display: flex">
-        <button mat-icon-button *ngIf="isAllowed('add')" (click)="roleDialog('add')">
+        <button mat-icon-button *ngIf="isAllowed('add')" (click)="openDialog('add')">
           <mat-icon class="add-button">add</mat-icon>
         </button>
-        <button mat-icon-button *ngIf="isAllowed('edit')" (click)="roleDialog('edit')">
+        <button mat-icon-button *ngIf="isAllowed('edit')" (click)="openDialog('edit')">
           <mat-icon class="edit-button">edit</mat-icon>
         </button>
-        <button mat-icon-button *ngIf="isAllowed('delete')" (click)="roleDialog('delete')">
+        <button mat-icon-button *ngIf="isAllowed('delete')" (click)="openDialog('delete')">
           <mat-icon class="delete-button">delete</mat-icon>
         </button>
   
@@ -22,7 +22,7 @@
           <h5 class="no-items-label">
             ﻻ يوجد مستخدمين مسجلين
           </h5>
-          <button mat-fab extended (click)="roleDialog('add')">
+          <button mat-fab extended (click)="openDialog('add')">
             <mat-icon>add</mat-icon> إضافة جديد
           </button>
         </div>
@@ -54,6 +54,18 @@
             <ng-container matColumnDef="id">
               <th mat-sort-header *matHeaderCellDef>ت</th>
               <td mat-cell *matCellDef="let row">{{ Helper.enToAr(row.id) }}</td>
+            </ng-container>
+  
+            <!-- role Column -->
+            <ng-container matColumnDef="name">
+              <th mat-sort-header *matHeaderCellDef>الاسم والقبيلة</th>
+              <td mat-cell *matCellDef="let row">{{ row.name }}</td>
+            </ng-container>
+  
+            <!-- role Column -->
+            <ng-container matColumnDef="username">
+              <th mat-sort-header *matHeaderCellDef>اسم المستخدم</th>
+              <td mat-cell *matCellDef="let row">{{ row.username }}</td>
             </ng-container>
   
             <!-- role Column -->

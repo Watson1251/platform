@@ -23,6 +23,7 @@ import {
 import { AngularMaterialModule } from './angular-material.module';
 import { AuthInterceptor } from './auth-interceptor';
 import { PaginatorComponent } from './shared/paginator/paginator.component';
+import { AuthGuard } from './auth.guard';
 
 @NgModule({
   declarations: [
@@ -47,6 +48,7 @@ import { PaginatorComponent } from './shared/paginator/paginator.component';
     AngularMaterialModule
   ],
   providers: [
+    AuthGuard,
     { provide: HTTP_INTERCEPTORS, useClass: AuthInterceptor, multi: true },
   ],
   bootstrap: [AppComponent]

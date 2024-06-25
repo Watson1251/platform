@@ -59,8 +59,7 @@ exports.getUsers = (req, res, next) => {
           _id: obj._id,
           name: obj.name,
           username: obj.username,
-          isMale: obj.isMale,
-          role: obj.role,
+          roleId: obj.roleId,
           __v: obj.__v
         }
         return user;
@@ -91,8 +90,7 @@ exports.getUser = (req, res, next) => {
             _id: user._id,
             name: user.name,
             username: user.username,
-            isMale: user.isMale,
-            role: user.role,
+            roleId: user.roleId,
             __v: user.__v
           });
       } else {
@@ -114,8 +112,7 @@ exports.createUser = (req, res, next) => {
       name: req.body.name,
       username: req.body.username.toLowerCase(),
       password: hash,
-      isMale: req.body.isMale,
-      role: req.body.role,
+      roleId: req.body.roleId,
     });
 
     user
@@ -126,10 +123,10 @@ exports.createUser = (req, res, next) => {
           result: result
         });
       })
-      .catch(err => {
-        console.log(err);
+      .catch(error => {
+        console.error(error.message);
         res.status(500).json({
-          message: "Invalid authentication credentials!"
+          message: error.message
         });
       });
   });
@@ -143,8 +140,7 @@ exports.updateUser = (req, res, next) => {
       "_id": req.body.id,
       "name": req.body.name,
       "username": req.body.username.toLowerCase(),
-      "isMale": req.body.isMale,
-      "role": req.body.role,
+      "roleId": req.body.roleId,
     };
 
     if (req.body.password != '') {
@@ -161,9 +157,9 @@ exports.updateUser = (req, res, next) => {
       }
     })
     .catch(error => {
-      console.log(error);
+      console.error(error.message);
       res.status(500).json({
-        message: "Couldn't udpate user!"
+        message: error.message
       });
     });
   });
@@ -181,9 +177,9 @@ exports.deleteUser = (req, res, next) => {
       }
     })
     .catch(error => {
-      console.log(error);
+      console.error(error.message);
       res.status(500).json({
-        message: "Deleting user failed!"
+        message: error.message
       });
     });
 };
