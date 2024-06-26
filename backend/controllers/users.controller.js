@@ -31,11 +31,11 @@ exports.userLogin = (req, res, next) => {
       const token = jwt.sign(
         { username: fetchedUser.username, userId: fetchedUser._id },
         process.env.JWT_KEY,
-        { expiresIn: "24h" }
+        { expiresIn: "1h" }
       );
       res.status(200).json({
         token: token,
-        expiresIn: 24 * 60 * 60,
+        expiresIn: 1 * 60 * 60,
         userId: fetchedUser._id,
         userName: fetchedUser.name,
         role: fetchedUser.role

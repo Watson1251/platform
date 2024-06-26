@@ -22,7 +22,6 @@ import {
 } from '@nebular/theme';
 import { AngularMaterialModule } from './angular-material.module';
 import { AuthInterceptor } from './auth-interceptor';
-import { PaginatorComponent } from './shared/paginator/paginator.component';
 import { AuthGuard } from './auth.guard';
 
 @NgModule({
@@ -45,7 +44,7 @@ import { AuthGuard } from './auth.guard';
     }),
     CoreModule.forRoot(),
     ThemeModule.forRoot(),
-    AngularMaterialModule
+    AngularMaterialModule,
   ],
   providers: [
     AuthGuard,

@@ -5,9 +5,11 @@ import {
   Router
 } from "@angular/router";
 import { Injectable } from "@angular/core";
-import { Observable } from "rxjs";
+import { Observable, of } from "rxjs";
 import { AuthService } from "./services/auth.services";
 import { SnackbarService } from "./services/snackbar.service";
+import { delay } from 'rxjs/operators';
+
 
 @Injectable()
 export class AuthGuard implements CanActivate {
@@ -41,6 +43,13 @@ export class AuthGuard implements CanActivate {
     const isAuth = this.authService.getIsAuth();
     var isValid = false;
 
+    if (!isAuth) {
+      // this.authService.logout();
+      this.snackbarService.openSnackBar('الرجاء تسجيل الدخول أولا', 'failure');
+      this.router.navigate(['/auth/login']);
+      return isAuth;
+    }
+
     if (route.url.length > 0) {
       const path = route.url[0].path as String;
       var permissions: string[] = [];
@@ -65,18 +74,11 @@ export class AuthGuard implements CanActivate {
       });
 
       if (!isValid) {
-        this.snackbarService.openSnackBar('الرجاء التأكد من الصلاحيات.', 'failure');
+        // this.snackbarService.openSnackBar('الرجاء التأكد من الصلاحيات.', 'failure');
         this.router.navigate(['/']);
       }
 
       return isValid;
-    }
-
-
-    if (!isAuth) {
-      this.snackbarService.openSnackBar('الرجاء تسجيل الدخول أولا', 'failure');
-      // this.authService.logout();
-      this.router.navigate(['/auth/login']);
     }
 
     return isAuth;
