@@ -17,9 +17,7 @@ export class DeepfakeDetectionComponent {
     private breakpointService: NbMediaBreakpointsService,
     private uploadFileService: UploadFileService,
     private snackbarService: SnackbarService
-  ) {
-
-  }
+  ) { }
 
   files: File[] = [];
   actionSize: NbComponentSize = 'medium';

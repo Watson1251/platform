@@ -7,6 +7,13 @@ import { map, takeUntil } from 'rxjs/operators';
 import { Subject, Observable } from 'rxjs';
 import { RippleService } from '../../../@core/utils/ripple.service';
 import { Router } from '@angular/router';
+import { AuthService } from '../../../services/auth.services';
+
+interface TempUser {
+  name: string;
+  picture: string;
+}
+
 
 @Component({
   selector: 'ngx-header',
@@ -18,38 +25,14 @@ export class HeaderComponent implements OnInit, OnDestroy {
   private destroy$: Subject<void> = new Subject<void>();
   public readonly materialTheme$: Observable<boolean>;
   userPictureOnly: boolean = false;
-  user: any;
-
-  themes = [
-    {
-      value: 'default',
-      name: 'Light',
-    },
-    {
-      value: 'dark',
-      name: 'Dark',
-    },
-    {
-      value: 'cosmic',
-      name: 'Cosmic',
-    },
-    {
-      value: 'corporate',
-      name: 'Corporate',
-    },
-    {
-      value: 'material-light',
-      name: 'Material Light',
-    },
-    {
-      value: 'material-dark',
-      name: 'Material Dark',
-    },
-  ];
+  user: TempUser = {
+    name: '',
+    picture: ''
+  };
 
   currentTheme = 'default';
 
-  userMenu = [ { title: 'Profile' }, { title: 'Log out' } ];
+  userMenu = [ { title: 'تسجيل الخروج' } ];
 
   public constructor(
     private sidebarService: NbSidebarService,
@@ -58,24 +41,32 @@ export class HeaderComponent implements OnInit, OnDestroy {
     private userService: UserData,
     private layoutService: LayoutService,
     private breakpointService: NbMediaBreakpointsService,
-    private rippleService: RippleService,
     private iconLibraries: NbIconLibraries,
-    private router: Router
+    private router: Router,
+    private rippleService: RippleService,
+    public authService: AuthService
+
   ) {
     this.iconLibraries.registerFontPack('font-awesome', { packClass: 'fa', iconClassPrefix: 'fa' });
-    this.materialTheme$ = this.themeService.onThemeChange()
-      .pipe(map(theme => {
-        const themeName: string = theme?.name || '';
-        return themeName.startsWith('material');
-      }));
   }
 
   ngOnInit() {
-    this.currentTheme = this.themeService.currentTheme;
+    this.menuService.onItemClick().subscribe(( event ) => {
+      this.onMenuItemClick(event.item.title);
+    })
 
-    this.userService.getUsers()
-      .pipe(takeUntil(this.destroy$))
-      .subscribe((users: any) => this.user = users.nick);
+    const userID = this.authService.getUserId();
+    console.log(userID);
+
+    this.user.name = "عبدالرحمن الصابري";
+
+
+    // this.userService.getUsers()
+    //   .pipe(takeUntil(this.destroy$))
+    //   .subscribe((users: any) => {
+    //     this.user = users.nick;
+    //     console.log(users.nick);
+    //   });
 
     const { xl } = this.breakpointService.getBreakpointsMap();
     this.themeService.onMediaQueryChange()
@@ -84,7 +75,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
         takeUntil(this.destroy$),
       )
       .subscribe((isLessThanXl: boolean) => this.userPictureOnly = isLessThanXl);
-
+    
     this.themeService.onThemeChange()
       .pipe(
         map(({ name }) => name),
@@ -109,10 +100,6 @@ export class HeaderComponent implements OnInit, OnDestroy {
     this.router.navigate(['/pages/privileges']);
   }
 
-  changeTheme(themeName: string) {
-    this.themeService.changeTheme(themeName);
-  }
-
   toggleSidebar(): boolean {
     this.sidebarService.toggle(true, 'menu-sidebar');
     this.layoutService.changeLayoutSize();
@@ -123,5 +110,16 @@ export class HeaderComponent implements OnInit, OnDestroy {
   navigateHome() {
     this.menuService.navigateHome();
     return false;
+  }
+
+  onMenuItemClick(event) {
+    switch (event) {
+      case 'تسجيل الخروج':
+        this.authService.logout();
+        break;
+      
+      default:
+        break;
+    }
   }
 }

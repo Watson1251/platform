@@ -1,13 +1,13 @@
+
 import { Component } from '@angular/core';
-import { NgForm } from '@angular/forms';
 import { Subscription } from 'rxjs';
+import { NgForm } from '@angular/forms';
 import { AuthService } from '../../services/auth.services';
 
-
 @Component({
-  selector: 'app-login',
+  selector: 'ngx-login',
   templateUrl: './login.component.html',
-  styleUrls: ['./login.component.css']
+  styleUrls: ['./login.component.scss'],
 })
 export class LoginComponent {
 
@@ -38,4 +38,5 @@ export class LoginComponent {
     this.isLoading = true;
     this.authService.login(form.value.username, form.value.password);
   }
+
 }

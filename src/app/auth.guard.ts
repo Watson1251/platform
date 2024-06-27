@@ -41,12 +41,14 @@ export class AuthGuard implements CanActivate {
   ): boolean | Observable<boolean> | Promise<boolean> {
 
     const isAuth = this.authService.getIsAuth();
-    var isValid = false;
+    var isValid = true; // to be changed when permissions are implemented
+
+    // return true;
 
     if (!isAuth) {
       // this.authService.logout();
       this.snackbarService.openSnackBar('الرجاء تسجيل الدخول أولا', 'failure');
-      this.router.navigate(['/auth/login']);
+      this.router.navigate(['/login']);
       return isAuth;
     }
 
@@ -74,7 +76,7 @@ export class AuthGuard implements CanActivate {
       });
 
       if (!isValid) {
-        // this.snackbarService.openSnackBar('الرجاء التأكد من الصلاحيات.', 'failure');
+        this.snackbarService.openSnackBar('الرجاء التأكد من الصلاحيات.', 'failure');
         this.router.navigate(['/']);
       }
 

@@ -3,13 +3,12 @@ import { HttpClient, HttpErrorResponse } from "@angular/common/http";
 import { Subject, throwError } from "rxjs";
 
 import { environment } from "../../environments/environment";
-import { User } from "../models/user.model";
 import { Router } from "@angular/router";
 import { AuthData } from "../models/auth-data.model";
 import { Permission } from "../models/permission.model";
 import { SnackbarService } from "./snackbar.service";
 
-const BACKEND_URL = environment.apiUrl + '/users/';
+const BACKEND_URL = environment.apiUrl + '/auth/';
 
 @Injectable({ providedIn: "root" })
 export class AuthService {
@@ -18,8 +17,6 @@ export class AuthService {
   private tokenTimer: any;
 
   private userId: string = "";
-  private userName: string = "";
-  private role: string = "";
 
   private permissions: Permission[] = [];
 
@@ -63,15 +60,13 @@ export class AuthService {
             this.setAuthTimer(expiresInDuration);
             this.isAuthenticated = true;
             this.userId = response.userId;
-            this.userName = response.userName;
-            this.role = response.role;
             this.authStatusListener.next(true);
             const now = new Date();
             const expirationDate = new Date(
               now.getTime() + expiresInDuration * 1000
             );
             console.log(expirationDate);
-            this.saveAuthData(token, expirationDate, this.userId, this.userName, this.role);
+            this.saveAuthData(token, expirationDate, this.userId);
             this.router.navigate(["/"]);
           }
         },
@@ -88,8 +83,6 @@ export class AuthService {
     this.isAuthenticated = false;
     this.authStatusListener.next(false);
     this.userId = '';
-    this.userName = '';
-    this.role = '';
     clearTimeout(this.tokenTimer);
     this.clearAuthData();
     this.router.navigate(["/login"]);
@@ -99,17 +92,13 @@ export class AuthService {
     const token = localStorage.getItem("token");
     const expirationDate = localStorage.getItem("expiration");
     const userId = localStorage.getItem("userId");
-    const userName = localStorage.getItem("userName");
-    const role = localStorage.getItem("role");
     if (!token || !expirationDate) {
       return;
     }
     return {
       token: token,
       expirationDate: new Date(expirationDate),
-      userId: userId,
-      userName: userName,
-      role: role,
+      userId: userId
     };
   }
 
@@ -124,8 +113,6 @@ export class AuthService {
       this.token = authInformation.token;
       this.isAuthenticated = true;
       this.userId = authInformation.userId ?? '';
-      this.userName = authInformation.userName ?? '';
-      this.role = authInformation.role ?? '';
       this.setAuthTimer(expiresIn / 1000);
       this.authStatusListener.next(true);
     }
@@ -138,20 +125,16 @@ export class AuthService {
     }, duration * 1000);
   }
 
-  private saveAuthData(token: string, expirationDate: Date, userId: string, userName: string, role: string) {
+  private saveAuthData(token: string, expirationDate: Date, userId: string) {
     localStorage.setItem("token", token);
     localStorage.setItem("expiration", expirationDate.toISOString());
     localStorage.setItem("userId", userId);
-    localStorage.setItem("userName", userName);
-    localStorage.setItem("role", role);
   }
 
   private clearAuthData() {
     localStorage.removeItem("token");
     localStorage.removeItem("expiration");
     localStorage.removeItem("userId");
-    localStorage.removeItem("userName");
-    localStorage.removeItem("role");
   }
 
   getToken() {
@@ -166,24 +149,25 @@ export class AuthService {
     return this.userId;
   }
 
-  getUserName() {
-    return this.userName;
-  }
-
-  getRole() {
-    return this.role;
-  }
-
   handleError(error: HttpErrorResponse) {
+    var message = '';
+    
+    // Client-side error occurred
     if (error.error instanceof ErrorEvent) {
-        // Client-side error occurred
-        console.error('Client-side error:', error.error.message);
+      message = 'حدث خطأ في العميل.';
+    
+    // Server-side error occurred
     } else {
-        // Server-side error occurred
-        console.error('Server-side error:', error.status, error.error);
+      message = 'حدث خطأ في المزود.';
     }
-    this.snackbarService.openSnackBar('خطأ في السيرفر', 'failure');
-    return throwError('Something went wrong. Please try again later.');
+
+    if (error.error.message) {
+      message += "\n";
+      message += error.error.message;
+    }
+
+    this.snackbarService.openSnackBar(message, 'failure');
+    return throwError(message);
   }
 
 }

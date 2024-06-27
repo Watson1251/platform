@@ -4,6 +4,7 @@ import { NgModule } from '@angular/core';
 import { PagesComponent } from './pages.component';
 import { PrivilegesComponent } from './privileges/privileges.component';
 import { UsersComponent } from './users/users.component';
+import { DeepfakeDetectionComponent } from './deepfake/deepfake-detection/deepfake-detection.component';
 
 const routes: Routes = [{
   path: '',

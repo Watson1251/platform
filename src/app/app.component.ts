@@ -4,20 +4,26 @@
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
 import { Component, OnInit } from '@angular/core';
-import { AnalyticsService } from './@core/utils/analytics.service';
-import { SeoService } from './@core/utils/seo.service';
+import { NbSpinnerService } from '@nebular/theme';
+import { AuthService } from './services/auth.services';
 
 @Component({
   selector: 'ngx-app',
-  template: '<router-outlet></router-outlet>',
+  template: `
+    <nb-layout-column>
+      <router-outlet></router-outlet>
+    </nb-layout-column>
+  `,
 })
 export class AppComponent implements OnInit {
 
-  constructor(private analytics: AnalyticsService, private seoService: SeoService) {
-  }
+  constructor(
+    private authService: AuthService,
+    private spinner$: NbSpinnerService
+  ) { }
 
   ngOnInit(): void {
-    // this.analytics.trackPageViews();
-    // this.seoService.trackCanonicalChanges();
+    // this.spinner$.load();
+    this.authService.autoAuthUser();
   }
 }

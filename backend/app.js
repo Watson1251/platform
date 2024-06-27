@@ -13,6 +13,8 @@ const movementsRoutes = require("./routes/movements.route");
 const issuesRoutes = require("./routes/issues.route");
 const notesRoutes = require("./routes/notes.route");
 
+const authRoutes = require("./routes/auth.route");
+
 const app = express();
 
 mongoose.set('strictQuery', false);
@@ -75,6 +77,7 @@ app.use("/api/devices", devicesRoutes);
 app.use("/api/movements", movementsRoutes);
 app.use("/api/issues", issuesRoutes);
 app.use("/api/notes", notesRoutes);
+app.use("/api/auth", authRoutes);
 app.use((req, res, next) => {
   res.sendFile(path.join(__dirname, "angular", "index.html"));
 });
