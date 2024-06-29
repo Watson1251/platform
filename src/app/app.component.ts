@@ -10,9 +10,11 @@ import { AuthService } from './services/auth.services';
 @Component({
   selector: 'ngx-app',
   template: `
-    <nb-layout-column>
+    <nb-layout windowMode>
+      <nb-layout-column>
       <router-outlet></router-outlet>
-    </nb-layout-column>
+      </nb-layout-column>
+    </nb-layout>
   `,
 })
 export class AppComponent implements OnInit {

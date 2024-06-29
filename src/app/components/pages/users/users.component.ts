@@ -121,8 +121,9 @@ export class UsersComponent {
         userId: user.id,
         name: user.name,
         username: user.username,
-        role: role.role
+        role: role != null ? role.role : "لم يتم تحديده"
       };
+
       rowData.push(data);
     }
 

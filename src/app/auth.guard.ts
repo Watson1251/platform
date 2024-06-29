@@ -43,8 +43,6 @@ export class AuthGuard implements CanActivate {
     const isAuth = this.authService.getIsAuth();
     var isValid = true; // to be changed when permissions are implemented
 
-    // return true;
-
     if (!isAuth) {
       // this.authService.logout();
       this.snackbarService.openSnackBar('الرجاء تسجيل الدخول أولا', 'failure');

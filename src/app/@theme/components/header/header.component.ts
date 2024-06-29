@@ -8,6 +8,8 @@ import { Subject, Observable } from 'rxjs';
 import { RippleService } from '../../../@core/utils/ripple.service';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../services/auth.services';
+import { UsersService } from '../../../services/users.services';
+import { User } from '../../../models/user.model';
 
 interface TempUser {
   name: string;
@@ -25,9 +27,15 @@ export class HeaderComponent implements OnInit, OnDestroy {
   private destroy$: Subject<void> = new Subject<void>();
   public readonly materialTheme$: Observable<boolean>;
   userPictureOnly: boolean = false;
-  user: TempUser = {
+  tempUser: TempUser = {
     name: '',
     picture: ''
+  };
+  returnedUser: User = {
+    id: '',
+    name: '',
+    username: '',
+    roleId: ''
   };
 
   currentTheme = 'default';
@@ -38,13 +46,13 @@ export class HeaderComponent implements OnInit, OnDestroy {
     private sidebarService: NbSidebarService,
     private menuService: NbMenuService,
     private themeService: NbThemeService,
-    private userService: UserData,
     private layoutService: LayoutService,
     private breakpointService: NbMediaBreakpointsService,
     private iconLibraries: NbIconLibraries,
     private router: Router,
     private rippleService: RippleService,
-    public authService: AuthService
+    private authService: AuthService,
+    private userService: UsersService
 
   ) {
     this.iconLibraries.registerFontPack('font-awesome', { packClass: 'fa', iconClassPrefix: 'fa' });
@@ -56,17 +64,16 @@ export class HeaderComponent implements OnInit, OnDestroy {
     })
 
     const userID = this.authService.getUserId();
-    console.log(userID);
+    this.userService.getUser(userID).subscribe((userData: any) => {
+      this.returnedUser.id = userData.body._id;
+      this.returnedUser.name = userData.body.name;
+      this.returnedUser.username = userData.body.username;
+      this.returnedUser.roleId = userData.body.roleId;
 
-    this.user.name = "عبدالرحمن الصابري";
+      this.tempUser.name = this.returnedUser.name;
 
-
-    // this.userService.getUsers()
-    //   .pipe(takeUntil(this.destroy$))
-    //   .subscribe((users: any) => {
-    //     this.user = users.nick;
-    //     console.log(users.nick);
-    //   });
+      console.log(this.tempUser);
+    });;
 
     const { xl } = this.breakpointService.getBreakpointsMap();
     this.themeService.onMediaQueryChange()
