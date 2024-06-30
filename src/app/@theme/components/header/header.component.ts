@@ -53,7 +53,6 @@ export class HeaderComponent implements OnInit, OnDestroy {
     private rippleService: RippleService,
     private authService: AuthService,
     private userService: UsersService
-
   ) {
     this.iconLibraries.registerFontPack('font-awesome', { packClass: 'fa', iconClassPrefix: 'fa' });
   }
