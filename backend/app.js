@@ -4,15 +4,10 @@ const bodyParser = require("body-parser");
 // const { MongoClient } = require("mongodb");
 const mongoose = require("mongoose");
 
-const defaultRoutes = require("./routes/default.route");
 const rolesRoutes = require("./routes/roles.route");
 const permissionsRoutes = require("./routes/permissions.route");
 const usersRoutes = require("./routes/users.route");
-const devicesRoutes = require("./routes/devices.route");
-const movementsRoutes = require("./routes/movements.route");
-const issuesRoutes = require("./routes/issues.route");
-const notesRoutes = require("./routes/notes.route");
-
+const fileUploadRoutes = require("./routes/file-upload.route");
 const authRoutes = require("./routes/auth.route");
 
 const app = express();
@@ -69,14 +64,10 @@ app.use((req, res, next) => {
   next();
 });
 
-app.use("/api/default", defaultRoutes);
 app.use("/api/roles", rolesRoutes);
 app.use("/api/permissions", permissionsRoutes);
 app.use("/api/users", usersRoutes);
-app.use("/api/devices", devicesRoutes);
-app.use("/api/movements", movementsRoutes);
-app.use("/api/issues", issuesRoutes);
-app.use("/api/notes", notesRoutes);
+app.use("/api/file-upload", fileUploadRoutes);
 app.use("/api/auth", authRoutes);
 app.use((req, res, next) => {
   res.sendFile(path.join(__dirname, "angular", "index.html"));

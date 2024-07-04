@@ -1,32 +1,44 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpEvent, HttpEventType, HttpHeaders } from '@angular/common/http';
-import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
+import { HttpClient, HttpErrorResponse, HttpEvent, HttpEventType, HttpHeaders } from '@angular/common/http';
+import { Observable, throwError } from 'rxjs';
+import { catchError, map } from 'rxjs/operators';
+import { SnackbarService } from './snackbar.service';
+import { environment } from '../../environments/environment';
+
+const BACKEND_URL = environment.apiUrl + '/file-upload/';
 
 @Injectable({
   providedIn: 'root'
 })
 export class UploadFileService {
-  private uploadUrl = 'http://192.168.50.37:3000/upload'; // Replace with your back-end endpoint
 
-  constructor(private http: HttpClient) { }
+  constructor(
+    private http: HttpClient,
+    private snackbarService: SnackbarService
+  ) { }
 
   upload(file: File): Observable<number> {
     const formData: FormData = new FormData();
     formData.append('file', file, file.name);
-
-    const headers = new HttpHeaders({
-      'Authorization': 'Bearer YOUR_AUTH_TOKEN' // Add any headers you need
-    });
-
-    return this.http.post(this.uploadUrl, formData, {
-      headers: headers,
-      reportProgress: true,
-      observe: 'events',
-      responseType: 'text' // Expect a text response
-    }).pipe(
-      map(event => this.getEventMessage(event))
-    );
+    formData.append('uploadedBy', "Watson");
+    
+    return this.http
+      .post<any>(
+        BACKEND_URL + "create/",
+        formData,
+        {
+          observe: 'events',
+          reportProgress: true,
+        }
+      )
+      .pipe(
+        map(event => this.getEventMessage(event))
+      )
+      .pipe(
+        catchError((error: HttpErrorResponse) => {
+            return this.handleError(error);
+        })
+      );
   }
 
   private getEventMessage(event: HttpEvent<any>): number {
@@ -38,5 +50,26 @@ export class UploadFileService {
       default:
         return 0;
     }
+  }
+
+  handleError(error: HttpErrorResponse) {
+    var message = '';
+    
+    // Client-side error occurred
+    if (error.error instanceof ErrorEvent) {
+      message = 'حدث خطأ في العميل.';
+    
+    // Server-side error occurred
+    } else {
+      message = 'حدث خطأ في المزود.';
+    }
+
+    if (error.error.message) {
+      message += "\n";
+      message += error.error.message;
+    }
+
+    this.snackbarService.openSnackBar(message, 'failure');
+    return throwError(message);
   }
 }
