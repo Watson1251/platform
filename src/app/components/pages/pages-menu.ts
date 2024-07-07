@@ -17,6 +17,7 @@ export const MENU_ITEMS: NbMenuItem[] = [
         title: 'الكشف',
         icon: 'search-outline',
         link: '/pages/deepfake/detection',
+        home: true,
       },
       {
         title: 'التوليد',

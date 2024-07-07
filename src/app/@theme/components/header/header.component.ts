@@ -70,8 +70,6 @@ export class HeaderComponent implements OnInit, OnDestroy {
       this.returnedUser.roleId = userData.body.roleId;
 
       this.tempUser.name = this.returnedUser.name;
-
-      console.log(this.tempUser);
     });;
 
     const { xl } = this.breakpointService.getBreakpointsMap();

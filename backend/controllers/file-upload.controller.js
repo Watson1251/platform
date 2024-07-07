@@ -6,16 +6,18 @@ const FileUpload = require("../models/file-upload.model");
 
 const router = express.Router();
 
-// Ensure upload directories exist
 const ensureDirectoryExistence = (filePath) => {
   const dirname = path.dirname(filePath);
-  if (fs.existsSync(dirname)) {
-    return true;
+  if (!fs.existsSync(dirname)) {
+    ensureDirectoryExistence(dirname);
+    fs.mkdirSync(dirname);
+    console.log(`Directory created: ${dirname}`);
   }
-  ensureDirectoryExistence(dirname);
-  fs.mkdirSync(dirname);
+  if (!fs.existsSync(filePath)) {
+    fs.mkdirSync(filePath);
+    console.log(`Directory created: ${filePath}`);
+  }
 };
-
 // Multer storage configuration
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {

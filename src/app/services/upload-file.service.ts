@@ -19,8 +19,8 @@ export class UploadFileService {
 
   upload(file: File): Observable<number> {
     const formData: FormData = new FormData();
-    formData.append('file', file, file.name);
     formData.append('uploadedBy', "Watson");
+    formData.append('file', file, file.name);
     
     return this.http
       .post<any>(
