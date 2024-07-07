@@ -7,17 +7,11 @@ const FileUpload = require("../models/file-upload.model");
 const router = express.Router();
 
 const ensureDirectoryExistence = (filePath) => {
-  const dirname = path.dirname(filePath);
-  if (!fs.existsSync(dirname)) {
-    ensureDirectoryExistence(dirname);
-    fs.mkdirSync(dirname);
-    console.log(`Directory created: ${dirname}`);
-  }
   if (!fs.existsSync(filePath)) {
-    fs.mkdirSync(filePath);
-    console.log(`Directory created: ${filePath}`);
+    fs.mkdirSync(filePath, { recursive: true });
   }
 };
+
 // Multer storage configuration
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -75,7 +69,6 @@ exports.createFile = (req, res, next) => {
         res.status(201).json({
           message: "File added successfully",
           file: {
-            ...createdFile._doc,
             id: createdFile._id
           }
         });

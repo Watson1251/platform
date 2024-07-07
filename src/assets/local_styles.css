@@ -16,6 +16,14 @@
   src: local("din"), url("./fonts/din.ttf") format("truetype");
 }
 
+.nb-theme-default nb-menu .menu-item a {
+  font-family: var(--arabic-font) !important;
+}
+
+.nb-theme-default nb-menu .menu-item .menu-icon {
+  margin: 0 0 0 0.5rem;
+}
+
 :root {
   --arabic-font: "din", Arial, sans-serif;
 

@@ -7,6 +7,7 @@ const mongoose = require("mongoose");
 const rolesRoutes = require("./routes/roles.route");
 const permissionsRoutes = require("./routes/permissions.route");
 const usersRoutes = require("./routes/users.route");
+const deepFakeRoutes = require("./routes/deep-fake.route");
 const fileUploadRoutes = require("./routes/file-upload.route");
 const authRoutes = require("./routes/auth.route");
 
@@ -68,6 +69,7 @@ app.use("/api/roles", rolesRoutes);
 app.use("/api/permissions", permissionsRoutes);
 app.use("/api/users", usersRoutes);
 app.use("/api/file-upload", fileUploadRoutes);
+app.use("/api/deep-fake", deepFakeRoutes);
 app.use("/api/auth", authRoutes);
 app.use((req, res, next) => {
   res.sendFile(path.join(__dirname, "angular", "index.html"));

@@ -167,15 +167,18 @@ nb-card-header, ngx-dropzone-label {
   max-width: 350px;
 }
 
-.mat-column-filename {
-  width: 300px;
-  max-width: 300px;
-}
-
 .small-spinner {
   width: 30px !important;
   height: 30px !important;
   margin-left: 10px;
   display: inline-block;
   vertical-align: middle;
+}
+
+.fake {
+  color: red;
+}
+
+.real {
+  color: green;
 }

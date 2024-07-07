@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpErrorResponse, HttpEvent, HttpEventType, HttpHeaders } from '@angular/common/http';
+import { HttpClient, HttpErrorResponse, HttpEvent, HttpEventType, HttpHeaders, HttpResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError, map } from 'rxjs/operators';
 import { SnackbarService } from './snackbar.service';
@@ -17,11 +17,12 @@ export class UploadFileService {
     private snackbarService: SnackbarService
   ) { }
 
-  upload(file: File): Observable<number> {
+  upload(file: File) {
     const formData: FormData = new FormData();
     formData.append('uploadedBy', "Watson");
     formData.append('file', file, file.name);
-    
+
+
     return this.http
       .post<any>(
         BACKEND_URL + "create/",
@@ -36,20 +37,26 @@ export class UploadFileService {
       )
       .pipe(
         catchError((error: HttpErrorResponse) => {
-            return this.handleError(error);
+          return this.handleError(error);
         })
       );
   }
 
-  private getEventMessage(event: HttpEvent<any>): number {
+  private getEventMessage(event: HttpEvent<any>) {
+    var result = {
+      progress: 0,
+      result: {}
+    }
     switch (event.type) {
       case HttpEventType.UploadProgress:
-        return event.total ? Math.round(100 * event.loaded / event.total) : 0;
+        result.progress = event.total ? Math.round(100 * event.loaded / event.total) : 0;
       case HttpEventType.Response:
-        return 100;
-      default:
-        return 0;
+        result.progress = 100;
+        if (event instanceof HttpResponse) {
+          result.result = event.body.file;
+        }
     }
+    return result
   }
 
   handleError(error: HttpErrorResponse) {

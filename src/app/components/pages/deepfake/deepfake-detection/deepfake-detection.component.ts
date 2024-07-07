@@ -15,13 +15,17 @@ import { MatTableDataSource } from '@angular/material/table';
 import { Subscription } from 'rxjs';
 import { UserDialogInterface } from '../../users/user-dialog/user-dialog-interface';
 import { UserDialogComponent } from '../../users/user-dialog/user-dialog.component';
+import { DeepfakeService } from '../../../../services/deepfake.services';
 
 interface FilePreview {
   file: File;
   url: URL;
   progress: number;
   isUploaded: boolean;
-  status: string
+  isAnalyzed: boolean;
+  status: string;
+  accuracy: string;
+  result: string;
 }
 
 interface CurrentRowData {
@@ -29,6 +33,8 @@ interface CurrentRowData {
   filePreview: FilePreview,
   filename: string,
   status: string,
+  accuracy: string,
+  result: string,
 }
 
 interface RowData {
@@ -49,7 +55,7 @@ export class DeepfakeDetectionComponent {
   Helper = Helper;
 
   currentShownRows: CurrentRowData[] = [];
-  currentDisplayedColumns: string[] = ['id', 'filePreview', 'filename', 'status'];
+  currentDisplayedColumns: string[] = ['id', 'filePreview', 'filename', 'status', 'accuracy', 'result'];
   currentDataSource: MatTableDataSource<CurrentRowData>;
   currentSelection = new SelectionModel<CurrentRowData>(true, []);
 
@@ -90,6 +96,7 @@ export class DeepfakeDetectionComponent {
     public dialog: MatDialog,
     public rolesService: RolesService,
     public usersService: UsersService,
+    public deepfakeService: DeepfakeService,
     private snackbarService: SnackbarService
   ) {
     this.shownRows = this.generateRows();
@@ -139,13 +146,15 @@ export class DeepfakeDetectionComponent {
     var rowData: CurrentRowData[] = [];
 
     for (let i = 1; i <= this.currentExperiments.length; i++) {
-      const exp = this.currentExperiments[this.currentExperiments.length-i];
+      const exp = this.currentExperiments[this.currentExperiments.length - i];
 
       const data: CurrentRowData = {
-        id: i,
+        id: this.currentExperiments.length - i + 1,
         filePreview: exp,
         filename: exp.file.name,
-        status: exp.status
+        status: exp.status,
+        accuracy: '',
+        result: ''
       };
 
       rowData.push(data);
@@ -289,7 +298,10 @@ export class DeepfakeDetectionComponent {
           url: videoUrl,
           progress: 0,
           status: '',
-          isUploaded: false
+          isUploaded: false,
+          isAnalyzed: false,
+          accuracy: '',
+          result: ''
         }
         this.filePreviews.push(preview);
       } else {
@@ -309,27 +321,49 @@ export class DeepfakeDetectionComponent {
     this.filePreviews.forEach(filePreview => {
       this.isAnalyzing = true;
       if (filePreview.file) {
-        this.uploadFileService.upload(filePreview.file).subscribe(
-          progress => {
-            filePreview.status = "جاري رفع الملف...";
-            filePreview.progress = progress;
-            if (filePreview.progress == 100) {
-              filePreview.status = "تم رفع الملف!";
-              filePreview.isUploaded = true;
-              if (this.filePreviews.some(preview => preview.file.name === filePreview.file.name)) {
-                this.filePreviews.splice(this.filePreviews.indexOf(filePreview), 1);
-                this.currentExperiments.push(filePreview);
-    
-                this.currentShownRows = this.generateCurrentRows();
-                this.currentDataSource = new MatTableDataSource(this.currentShownRows);
-              }
+        this.uploadFileService.upload(filePreview.file).subscribe((fileuploadData: any) => {
+          // update progress
+          filePreview.status = "جاري رفع الملف...";
+          filePreview.progress = fileuploadData.progress;
+
+          if (fileuploadData.result.id) {
+            filePreview.status = "تم رفع الملف!";
+            filePreview.progress = 100;
+            filePreview.isUploaded = true;
+
+            // remove item from upload menu gui and update rows
+            if (this.filePreviews.some(preview => preview.file.name === filePreview.file.name)) {
+              this.filePreviews.splice(this.filePreviews.indexOf(filePreview), 1);
+              this.currentExperiments.push(filePreview);
+
+              // predict deepfake
+              filePreview.status = "جاري تحليل الملف...";
+              this.deepfakeService.predictVideo(fileuploadData.result.id).subscribe(response => {
+                if (response.status == 200 || response.status == 201) {
+                  if (response.body.result) {
+                    filePreview.status = "تم تحليل الملف!";
+                    filePreview.isAnalyzed = true;
+
+                    const videoAccuracy = parseFloat(response.body.result);
+                    const videoAccuracyStr = videoAccuracy.toFixed(2);
+                    filePreview.accuracy = "المادة المرئية: " + videoAccuracyStr + "%";
+                    filePreview.result = videoAccuracy > 85 ? "مزيف" : "حقيقي";
+  
+                    this.currentShownRows = this.generateCurrentRows();
+                    this.currentDataSource = new MatTableDataSource(this.currentShownRows);
+                  }
+                }
+              });
             }
-          },
-          error => console.error(error)
-        );
+          }
+        });
       }
     });
     this.isAnalyzing = false;
+  }
+
+  predict(fileId: string) {
+    
   }
 
   clearFiles() {
