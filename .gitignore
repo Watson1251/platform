@@ -44,3 +44,5 @@ Thumbs.db
 /.vscode
 
 /backend/uploads
+
+/engine/df_video/weights
