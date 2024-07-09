@@ -1,18 +1,25 @@
 import re
 import torch
+import os
 from kernel_utils import VideoReader, FaceExtractor, confident_strategy, predict_on_video
 from training.zoo.classifiers import DeepFakeClassifier
-
-from fastapi import Request, FastAPI, UploadFile, File
+from fastapi import Request, FastAPI
 import uvicorn
+import logging
 
 app = FastAPI()
 
 # GLOBAL VARIABLE
 models = []
 
+# Configure logging
+logging.basicConfig(level=logging.INFO)
+
+# Ensure no GPU is used
+os.environ["CUDA_VISIBLE_DEVICES"] = ""
 
 def load_models():
+    device = torch.device("cpu")  # Force using CPU
 
     model_paths = ["weights/" + model for model in [
         "final_111_DeepFakeClassifier_tf_efficientnet_b7_ns_0_36",
@@ -24,15 +31,14 @@ def load_models():
         "final_999_DeepFakeClassifier_tf_efficientnet_b7_ns_0_23"
     ]]
     for path in model_paths:
-        model = DeepFakeClassifier(encoder="tf_efficientnet_b7_ns").to("cuda")
-        print("loading state dict {}".format(path))
-        checkpoint = torch.load(path, map_location="cpu")
+        model = DeepFakeClassifier(encoder="tf_efficientnet_b7_ns")
+        logging.info("Loading state dict {}".format(path))
+        checkpoint = torch.load(path, map_location=device)
         state_dict = checkpoint.get("state_dict", checkpoint)
         model.load_state_dict({re.sub("^module.", "", k): v for k, v in state_dict.items()}, strict=True)
         model.eval()
         del checkpoint
-        models.append(model.half())
-
+        models.append(model)
 
 def predict(path):
     frames_per_video = 32
@@ -43,40 +49,30 @@ def predict(path):
     input_size = 380
     strategy = confident_strategy
 
-    # filepath = 'input/1_fake.mp4'
-
-    y_pred = predict_on_video(face_extractor=face_extractor, video_path=path, input_size=input_size, batch_size=frames_per_video, models=models, strategy=strategy, apply_compression=False)
+    y_pred = predict_on_video(face_extractor=face_extractor, video_path=path, input_size=input_size, batch_size=frames_per_video, models=models, strategy=strategy, apply_compression=False, device=torch.device("cpu"))
     
     return y_pred
-
 
 # load models
 load_models()
 
-
 @app.post("/predict/")
 async def recognize(request: Request):
-
-    json = await request.json()
-    path = json['path']
-    result = {}
-    
-    prediction = predict(path)
-
-    result = {
-        'code': 0,
-        'result': str(prediction*100)
-    }
-
-    return result
-
+    try:
+        json = await request.json()
+        path = json['path']
+        prediction = predict(path)
+        result = {
+            'code': 0,
+            'result': str(prediction * 100)
+        }
+        return result
+    except Exception as e:
+        logging.error(f"Error during prediction: {e}")
+        return {
+            'code': 1,
+            'message': 'Prediction failed'
+        }
 
 if __name__ == "__main__":
     uvicorn.run(app, host="127.0.0.1", port=8000)
-
-# if __name__ == '__main__':
-
-#     predictions = predict()
-
-#     print(predictions)
-    

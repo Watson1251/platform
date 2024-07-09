@@ -1,9 +1,0 @@
-torch
-pandas
-cv
-opencv-python
-Pillow
-albumentations
-facenet_pytorch
-timm
-fastapi

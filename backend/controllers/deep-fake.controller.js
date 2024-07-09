@@ -2,9 +2,7 @@ const FileUpload = require("../models/file-upload.model");
 const pathLib = require('path');
 var XMLHttpRequest = require('xhr2');
 
-
-const pythonIP = "http://127.0.0.1:8000/";
-
+const pythonIP = "http://python-app:8000/";
 
 exports.predictVideo = (req, res, next) => {
   FileUpload.findById(req.body.fileId)

@@ -1,0 +1,20 @@
+version: "3.8"  # Specify the Docker Compose version
+
+services:
+  deepfake:
+    build: .  # Build the image from the current directory (where Dockerfile resides)
+    ports:
+      - "3000:3000"  # Map container port 3000 to host port 3000
+      - "27018:27017"  # Map MongoDB port (if you want to access it from outside)
+      - "4200:4200"  # Map Angular application port
+      # - "8000:8000"  # Map FastAPI application port
+    volumes:
+      - ./platform:/platform  # Optional: Mount your application directory for development purposes
+    stdin_open: true  # Keep the stdin open even if not attached
+    tty: true  # Allocate a pseudo-TTY
+    networks:
+      - deepfake-net
+
+networks:
+  deepfake-net:
+    driver: bridge
